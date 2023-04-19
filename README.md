@@ -5,7 +5,7 @@ The **ProbShakemaps** is an open source Python toolbox that generates a probabil
 Dependencies
 -----------------------------
 
- * All [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap) dependencies
+ * All [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap) and [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) dependencies
  * basemap
  * seaborn
  
