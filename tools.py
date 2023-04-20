@@ -683,6 +683,7 @@ class EnsemblePlot:
     def plot(self):
 
         path = os.path.join(os.getcwd(), "OUTPUT/")
+        
         # Create POIs map and save it
         pois_map(self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.Lat_Event, self.Lon_Event, self.deg_round, path)
 
@@ -693,10 +694,9 @@ class EnsemblePlot:
         
         outputfile = os.path.join(os.getcwd(), "OUTPUT/HDF5_FILES/", self.output)
         with h5py.File(outputfile, "r") as f:
-            # Loop over all scens
             mean_all_scens = np.zeros((self.n_pois, EnsembleSize))
+            
             for i, scen in enumerate(f.keys()):
-                # Initialize an empty array to store the mean PGA values for each POI for the current scenario
                 mean_scen = np.zeros((self.n_pois,))
 
                 # Loop over POIs in the current scenario
@@ -707,27 +707,23 @@ class EnsemblePlot:
                         # Calculate the mean IMT value for the current POI
                         mean_scen[poi_idx_dict[poi]] += np.mean(pga_dist)
 
-                # Store the mean IMT values for all POIs for the current scenario
                 mean_all_scens[:, i] = mean_scen        
 
             # Create the ensemble spread plot
             fig, ax = plt.subplots()
             bp = ax.boxplot(mean_all_scens.T, positions=poi_indices, sym='', whis=[5, 95], widths=0.6)
-            # set x-axis labels to POI indexes
             ax.set_xticklabels(poi_indices)
 
             median_patch = mpatches.Patch(color='orange', label='Median')
             whisker_patch = mpatches.Patch(color='gray', label='5th-95th Percentiles')
             plt.legend(handles=[median_patch, whisker_patch], loc='upper right')
 
-            # set axis labels and title
             ax.set_xlabel('POI index')
             if self.imt == 'PGA':
                 ax.set_ylabel(f"{self.imt} mean (g)", fontsize=16)
             if self.imt == 'PGV':
                 ax.set_ylabel(f"{self.imt} mean (cm/s)", fontsize=16)
 
-            # show plot
             plt.show()
             fig.savefig(path + f"/Ensemble_Spread_Plot_{self.imt}.pdf", bbox_inches='tight')
             print(f"***** Figure saved in {path} *****")
