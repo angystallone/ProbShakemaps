@@ -7,7 +7,6 @@ import argparse
 
 params_file = 'params.json'
 
-# Define command-line arguments
 parser = argparse.ArgumentParser(description='ProbShakemap Toolbox')
 input_params = parser.add_argument_group('input params')
 input_params.add_argument('--task', choices=['RunProbAnalysis', 'GenerateProbShakemap'], required=True, help='Task to perform')
@@ -26,24 +25,23 @@ input_params.add_argument('--max_distance', type=int, default=200, help='Max dis
 input_params.add_argument('--pois_selection_method', choices=['random', 'azimuth_uniform'], help='Selection method for the POIs of the subset')
 input_params.add_argument('--fileScenariosWeights', default="", help='File with scenarios weights')
 
-# Parse command-line arguments
 args = parser.parse_args()
 
 if args.task is None:
     raise TypeError("Missing required argument 'task'")
 
-# Run probabilistic analysis if requested
+# Run probabilistic analysis
 if args.task == 'RunProbAnalysis':
     
     print("***** Running probabilistic analysis *****")
 
     filename = os.path.join(os.getcwd(), "OUTPUT/", params_file)
-    # Run main.run_prob_analysis() and save the params to the file
    
-    # set the random seed for reproducibility
+    # Set the random seed for reproducibility!
     seed = 0
     numpy.random.seed(seed)
 
+    # Run main.run_prob_analysis() and save the params to the file
     params = main.run_prob_analysis()
     with open(filename, 'w') as f:
         json.dump(params, f)
@@ -56,6 +54,7 @@ if args.task == 'GenerateProbShakemap':
     print("IMT = ", args.imt)
     print("Ensemble sample number = ", args.ensemble_number)     
     print("***** Loading params file *****")
+    
     filename = os.path.join(os.getcwd(), "OUTPUT/", params_file)
     with open(filename, 'r') as f:
         params = json.load(f)
@@ -68,7 +67,6 @@ if args.task == 'GenerateProbShakemap':
     print("Lat_Event = ", Lat_Event)
     print("Lon_Event = ", Lon_Event)
     print("NumGMPEsRealizations = ", NumGMPEsRealizations)
-
 
     # Run selected tool
     if args.tool == 'StationRecords':
