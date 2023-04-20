@@ -1,17 +1,3 @@
-# %%
-
-# -------------------------------- RUN THE SHAKEMAP CONTAINER AND THE CODE WITHIN IT -------------------------------- #
-
-# cd shakemap4/
-# docker run -it --rm -t -p 8888:8888 -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
-# sm_profile -l (--> Profile: world **Current Profile**, Install Path: /home/shake/shakemap_profiles/world/install, Data Path: /home/shake/shakemap_profiles/world/data)
-# cd /home/shake/shakemap_profiles/world
-# python GMPEs.py
-
-# NOTE: Since the Vs30 file was already downloaded, I had to change its relative path in model.conf
-
-# %%
-
 from distutils.command import install
 from openquake.hazardlib.source import BaseRupture
 from openquake.hazardlib.geo import Point, surface
@@ -50,7 +36,6 @@ import config
 #################################################################
 
 
-# To sort filenames by sample number
 def grab_sample_number(x):
     return(x.split('.')[-2:])
 
@@ -59,10 +44,8 @@ def process_scenario(scen, Ensemble_Scenarios, imts, msr, rupture_aratio,
                      tectonicRegionType, context_maker, Site_Collection, 
                      correlation_model, crosscorr_model, gmpes, Weighted_Num_Realiz):
 
-    # Get scenario index 
     k = Ensemble_Scenarios.index(scen)
-
-    # Initialize GMF output for this scenario
+    
     gmf = [[] for _ in range(len(imts))]
 
     Mag = float(scen[0])
@@ -98,17 +81,21 @@ def process_scenario(scen, Ensemble_Scenarios, imts, msr, rupture_aratio,
         cross_correl=crosscorr_model
         ) 
 
-    #print(gc.seed)
-
-    mean_and_stdev = context_maker.get_mean_stds(ctx)  # Get an array of shape (4, G, M, N) with mean and stddevs 
+    # Get an array of shape (4, G, M, N) with mean and stddevs
+    
+    mean_and_stdev = context_maker.get_mean_stds(ctx)   
         
     # Loop over GMPEs    
+    
     for g, gmpe in enumerate(gmpes):
+        
         # 'gc.compute' --> Compute gmf and returns an array of shape (num_imts, num_sites, num_events) with the sampled gmf, and two arrays with shape 
         # (num_imts, num_events): sig for tau and eps for the random part
+        
         gf = gc.compute(gmpe, Weighted_Num_Realiz[g], mean_and_stdev[:, g, :, :])  
 
         # Take only first array output from gc.compute (shape: (num_imts, num_sites, num_events)) and loop over IMTS 
+        
         for m in range(len(imts)):
 
             gmf[m].append(gf[0][m].view())
@@ -123,34 +110,29 @@ def write_hdf5_file(m, j, i, chunk_size, num_processes, EnsembleSize, subdir1, i
     
     k_start = i * chunk_size
     k_end = (i+1) * chunk_size
-    # adjust k_start and k_end for the last chunk
     if i == num_processes - 1:
         k_start = EnsembleSize - chunk_size
         k_end = EnsembleSize 
 
     filename = subdir1 + "/" + "SIZE_%d" % EnsembleSize + "_ENSEMBLE_%d_%s_chunk%d-%d.hdf5" % (j + 1, imts[m], i, i+1)
 
-    # One .hdf5 file per ensemble and per imts
     with h5py.File(filename,'w') as h5f:
-        # Loop over source scenarios within each sampled ensemble
+        
         for k in range(k_start, k_end):
-            # One group per scenario
+            
             grp = h5f.create_group(keys_scen[k])
 
-            # Loop over sites
             for s in range(len(sites)):
                 SiteGmfGMPE = []
                 for g in range(len(gmpes)): 
                     SiteGmfGMPE.append(GMPEsRealizationsForProbShakeMap_AllGMPEs[j][k][m][g][s])
 
-                # Use a lock to synchronize access to the SiteGmf array
                 lock.acquire()
                 try:
                     SiteGmf[m][j][k][s] = [x for sublist in SiteGmfGMPE for x in sublist]
                 finally:
                     lock.release()
-
-                # One dataset per site    
+  
                 data_name = keys_sites[s]
                 grp.create_dataset(data_name, data=SiteGmf[m][j][k][s], compression="gzip", compression_opts=5)
 
@@ -159,7 +141,8 @@ def write_hdf5_file(m, j, i, chunk_size, num_processes, EnsembleSize, subdir1, i
 
 def run_prob_analysis():
 
-    # Load configuration parameters
+    # LOAD CONFIG PARAMS
+    
     config_dict = config.load_config('input_file.txt')
 
     tectonicRegionType = config_dict['tectonicRegionType']
@@ -221,9 +204,6 @@ def run_prob_analysis():
 
     print("Number of CPU processes: " + str(num_processes))
 
-    # LOAD INFO FROM 'shake_result.hdf'
-
-    # Install dir and event dir
     install_path, data_path = get_config_paths()
     print("Install Path = ", install_path)
     print("Data Path = ", data_path)
@@ -236,31 +216,26 @@ def run_prob_analysis():
     if not os.path.isfile(eventxml):
         raise FileNotFoundError(f"{eventxml} does not exist.")   
 
-    # Parse the eventxml file
     tree = ET.parse(eventxml)
     root = tree.getroot()
-    # Get the latitude and longitude of the event
     Lat_Event = root.attrib['lat']
     Lon_Event = root.attrib['lon']
 
-    # Collects event and configuration data and creates the file shake_data.hdf
+    # SHAKEMAP PART
+    
     assemble = AssembleModule(ID_Event, comment='Test comment.')
     assemble.execute()
-
     # Reads the data in shake_data.hdf and produces an interpolated ShakeMap
     model = ModelModule(ID_Event)
     model.execute()
-
     # Generate model_select.conf file, containing GMPE sets 
     select = SelectModule(ID_Event)
     select.execute()
 
-    # Read the event.xml file and generate a GMPE set for the event based on the event’s residence within, 
-    # and proximity to, a set of predefined tectonic regions and user-defined geographic areas
-
     print("********* RETRIEVING GMPEs *******")
 
-    # Extract GMPE set
+    # EXTRACT GMPE SET 
+    
     conf_filename = event_dir + '/model_select.conf'
     config_model_select = ConfigObj(conf_filename)
     print("Config filename = ", conf_filename)
@@ -271,10 +246,9 @@ def run_prob_analysis():
 
     print("GMPE Sets selected for this earthquake = ", GMPE_Set)
 
-    # config files
+    # config files (Shakemap)
     conf_filename = install_path + '/config/gmpe_sets.conf'
     config_gmpe_sets = ConfigObj(conf_filename)
-
     conf_filename = install_path + '/config//modules.conf'
     config_modules = ConfigObj(conf_filename)
 
@@ -296,7 +270,8 @@ def run_prob_analysis():
     for elem in GMPEs_Names:
         gmpes.append(valid.gsim(elem))  # OQ equivalent of getattr
 
-    # Load POIs lat and long
+    # LOAD POIs
+    
     print("********* LOADING POIs *******")
 
     filename = POIsfile
@@ -306,17 +281,17 @@ def run_prob_analysis():
 
     print("Number of POIs = ", len(POIs))
 
-    # Load LON and LAT of POIs
     LON = numpy.empty(len(POIs))
     LAT = numpy.empty(len(POIs))
     for i in range(len(POIs)):
         LON[i] = float(POIs[i][1])
         LAT[i] = float(POIs[i][0])
 
+    # LOAD Vs30
+    
     if vs30file:
 
         print("********* LOADING Vs30 *******")
-        # Vs30
         vs30fullname = os.path.join(data_path, 'shakemap_data', 'vs30', vs30file)
         vs30grid = GMTGrid.load(vs30fullname)
         # Interpolate Vs30 values at POIs 
@@ -324,11 +299,11 @@ def run_prob_analysis():
 
     print("********* DEFINING SITE COLLECTION *******")
 
-    # Define a SiteCollection for all the POIs
+    # DEFINE OQ SITE COLLECTION
+    
     sites = []
     for i in range(len(POIs)):
         site_location = Point(LON[i], LAT[i])
-        # If Vs30 file is provided
         if vs30file:
             site = Site(location=site_location, vs30=vs30_POIs[i], vs30measured=False, z1pt0=40., z2pt5=1.0)
         # If Vs30 file is not provided, use default value for Vs30
@@ -339,20 +314,18 @@ def run_prob_analysis():
     Site_Collection = SiteCollection(sites)
     print(Site_Collection.complete)    
 
-    listscenarios_dir = os.getcwd() + "/INPUT_FILES/ENSEMBLE/"
-
-    # Get ensemble file list (will contain more than 1 file if multiple ensembles of the same size are available)    
+    # LOAD SCENARIOS IN THE ENSEMBLE
+    
+    listscenarios_dir = os.getcwd() + "/INPUT_FILES/ENSEMBLE/"  
     filelist = [name for name in os.listdir(listscenarios_dir) if name != ".DS_Store"]
 
     NumSampledEnsembles = len(filelist)
     print("Number of random ensemble samples : " + str(NumSampledEnsembles))
-
-    # Sort filenames by sample number    
+  
     filelist_sorted = []
     for file in sorted(filelist, key = grab_sample_number): 
         filelist_sorted.append(file)
 
-    # Get the number of scenarios
     with open(os.path.join(listscenarios_dir, filelist_sorted[0]), 'r') as f:
         EnsembleSize = 0
         for line in f:
@@ -360,11 +333,9 @@ def run_prob_analysis():
 
     print("Number of source scenarios to process = ", EnsembleSize)
 
-    # Build contexts
+    # BUILD OQ CONTEXTS
 
     print("********* BUILDING OPENQUAKE CONTEXTS *******")
-
-    # # Define input parameters for ContextMaker
 
     imtls = {}
     for imt in imts:
@@ -375,6 +346,8 @@ def run_prob_analysis():
     # Instantiate a ContextMaker object (Note: independent from source and sites!)
     context_maker = ContextMaker(tectonicRegionType, gmpes, param)
 
+    # SAMPLING UNCERTAINTY
+    
     print("********* SAMPLING UNCERTAINTY *******")
 
     correlation_model = correlation_model(vs30_clustering=vs30_clustering)
@@ -406,35 +379,29 @@ def run_prob_analysis():
             scen = line.strip().split(' ')
             Ensemble_Scenarios.append(scen)  
 
-        # Set the random seed for reproducibility in OpenQuake GmfComputer
+        # Set the random seed for reproducibility!
         seed = 0
         numpy.random.seed(seed)
 
-        ################################
-        # SETTING MULTIPROCESSING PARAMS
-        ################################
-
         # Number of CPU cores to use
         num_processes = num_processes
-        chunk_size_default = int(EnsembleSize/num_processes) # size of each chunk of scenarios
+        chunk_size_default = int(EnsembleSize/num_processes)
         print("Chunk size = ", chunk_size_default)
-        last_chunk_size = chunk_size_default + EnsembleSize - num_processes * chunk_size_default # size of the last chunk
+        last_chunk_size = chunk_size_default + EnsembleSize - num_processes * chunk_size_default
         print("Last chunk size = ", last_chunk_size)
 
         # Create pool of worker processes
         with Pool(processes=num_processes) as pool:
             results = []
 
-            # iterate over processes
             for i in range(num_processes):
                 if i == num_processes - 1:
-                    chunk_size = last_chunk_size # adjust chunk size for the last process
+                    chunk_size = last_chunk_size 
                 else:
                     chunk_size = chunk_size_default
 
                 start_idx = i * chunk_size
                 end_idx = (i+1) * chunk_size
-                # adjust k_start and k_end for the last chunk
                 if i == num_processes - 1:
                     start_idx = EnsembleSize - chunk_size
                     end_idx = EnsembleSize 
@@ -468,7 +435,10 @@ def run_prob_analysis():
                         # Print this for one source scenario only
                         print("IMT: ", imts[m], "-- GMPE", gmpe, "is sampled", Weighted_Num_Realiz[g], "times over a total of", NumGMPEsRealizations, "times")
                     
+    # AGGREGATE AND WRITE RESULTS 
+    
     print("********* AGGREGATE RESULTS *******")
+    
     # Aggregate the generated gmf at each site for Probabilistic Shakemap
 
     # Structure of GMPEsRealizationsForProbShakeMap 
@@ -481,7 +451,6 @@ def run_prob_analysis():
 
     # For each site, there are as many values as Weighted_Num_Realiz[m], i.e. the number of realizations for the current GMPE 
 
-    # PREPARE KEYS FOR SCENARIOS AND SITES
     keys_sites = [] 
     for s in range(len(sites)):
         keys_sites.append(f"Site_LAT:{Point(float(POIs[s][1]), float(POIs[s][0])).latitude}_LON:{Point(float(POIs[s][1]), float(POIs[s][0])).longitude}")
@@ -498,24 +467,17 @@ def run_prob_analysis():
     # # 4th Index: Site index 
 
     # # For each site, there are as many values as NumGMPEsRealizations, i.e. tot number of realizations after merging all GMPEs
-    
-    #######################################
-    ############# GO PARALLEL #############
-    #######################################
-    
-    # Preallocate SiteGmf
+ 
     SiteGmf = [[[[[[] for _ in range(NumGMPEsRealizations)] for _ in range(len(sites))] for _ in range(EnsembleSize)] for _ in range(NumSampledEnsembles)] for _ in range(len(imts))]
 
     num_processes = num_processes 
-    chunk_size_default = int(EnsembleSize/num_processes) # size of each chunk of scenarios
+    chunk_size_default = int(EnsembleSize/num_processes) 
     print("Chunk size = ", chunk_size_default)
-    last_chunk_size = chunk_size_default + EnsembleSize - num_processes * chunk_size_default # size of the last chunk
+    last_chunk_size = chunk_size_default + EnsembleSize - num_processes * chunk_size_default
     print("Last chunk size = ", last_chunk_size)
 
-    # Create a lock to synchronize access to the SiteGmf array
     lock = Lock()
     
-    # merge the HDF5 files
     params = {} 
     for m in range(len(imts)):
         params[imts[m]] = {}
@@ -525,7 +487,7 @@ def run_prob_analysis():
             args = []
             for i in range(num_processes):
                 if i == num_processes - 1:
-                    chunk_size = last_chunk_size # adjust chunk size for the last process
+                    chunk_size = last_chunk_size 
                 else:
                     chunk_size = chunk_size_default
                 args.append((m, j, i, chunk_size, num_processes, EnsembleSize, subdir1, imts, keys_scen, sites, gmpes, GMPEsRealizationsForProbShakeMap_AllGMPEs, SiteGmf, keys_sites, lock))   
@@ -533,7 +495,6 @@ def run_prob_analysis():
             print(f"Spawning {num_processes} processes")
             processes = [Process(target=write_hdf5_file, args=arg) for arg in args]
 
-            # start the processes
             for process in processes:
                 process.start()
             for process in processes:
