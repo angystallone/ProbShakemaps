@@ -72,7 +72,7 @@ REQUIRED TO RUN
 > * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from `openquake.hazardlib.correlation`).
 > * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from `openquake.hazardlib.cross_correlation`).
 > * NumGMPEsRealizations: total number of GMPEs realizations at a specific POI for spatial and crosscorrelation of ground motion fields.
-> * num_processes: number of processes for code parallelization.
+> * num_processes: number of CPU cores for code parallelization.
 
 
 Usage
