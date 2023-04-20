@@ -187,3 +187,9 @@ License
 -----------------------------
 
 This project is released under the [MIT License](LICENSE).
+
+
+Contact
+-----------------------------
+
+If you need support, write to [angela.stallone@ingv.it](mailto:angela.stallone@ingv.it).
