@@ -1,6 +1,6 @@
 # ProbShakemaps
 
-The **ProbShakemaps** is an open source Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemaps](https://github.com/DOI-USGS/ghsc-esi-shakemap). 
+**ProbShakemaps** is an open source Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemaps](https://github.com/DOI-USGS/ghsc-esi-shakemap). 
 
 Dependencies
 -----------------------------
