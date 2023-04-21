@@ -132,7 +132,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **TOOL: 'GetStatistics'**
 
-* Calculates and save statistics ('Mean','Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If the user does not provide a file with scenarios weights, they are considered equally probable.
+* Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If the user does not provide a file with scenarios weights, they are considered equally probable.
 * Plots calculated statistics at each POI.
 * Plots the IMT cumulative distribution and main statitics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based an all scenarios in the ensemble.
 
