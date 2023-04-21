@@ -94,6 +94,8 @@ OUTPUT
 
 **GENERATE PROBSHAKEMAPS**
 
+Include two utility tools ('StationRecords' and 'QueryHDF5') and the main tools to generate Probabilistic Shakemaps: 'GetStatistics' and 'EnsemblePlot'. Probabilistic Shakemaps helps visualizaing ensemble predictions at the POIs.
+
 **TOOL: 'StationRecords'**
 
 Inspect Shakemap .json station file
