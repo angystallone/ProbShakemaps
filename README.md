@@ -150,7 +150,7 @@ OUTPUT
 
 **TOOL: 'GetDistributions'**
 
-Plots the IMT cumulative distribution and main statitics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based an all scenarios in the ensemble.
+Plots the IMT cumulative distribution and main statistics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based an all scenarios in the ensemble.
 
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool GetDistributions --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt
