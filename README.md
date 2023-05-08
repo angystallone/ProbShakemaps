@@ -134,7 +134,6 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 * Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If the user does not provide a file with scenarios weights, they are considered equally probable.
 * Plots calculated statistics at each POI.
-* Plots the IMT cumulative distribution and main statitics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based an all scenarios in the ensemble.
 
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool GetStatistics --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt
@@ -149,11 +148,22 @@ OUTPUT
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="85%" height="85%">
 </p>
 
-* Plot of Datum-Ensemble comparison at each POI saved in the `DISTRIBUTIONS` folder
+**TOOL: 'GetDistributions'**
+
+Plots the IMT cumulative distribution and main statitics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based an all scenarios in the ensemble.
+
+```bash
+python ProbShakemaps.py --task GenerateProbShakemap --tool GetDistributions --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt
+```
+
+OUTPUT
+
+Plot of Datum-Ensemble comparison at each POI saved in the `DISTRIBUTIONS` folder
 
 <p align="center">
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/Distr_POI-003.png" alt="DatumEnsemble" width="80%" height="80%">
 </p>
+
 
 **TOOL: 'EnsemblePlot'**
 
