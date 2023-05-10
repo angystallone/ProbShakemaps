@@ -5,7 +5,7 @@
 Dependencies
 -----------------------------
 
- * All [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap) and [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) dependencies
+ * [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap) and [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) dependencies
  * basemap
  * seaborn
  
@@ -48,7 +48,7 @@ input params:
   --max_distance MAX_DISTANCE
                         Max distance from epicenter of POIs in the subset
   --pois_selection_method {random,azimuth_uniform}
-                        Selection method for the POIs of the subset
+                        Selection method for the POIs in the subset
   --fileScenariosWeights FILESCENARIOSWEIGHTS
                         File with scenarios weights
 </pre>                        
@@ -94,7 +94,7 @@ OUTPUT
 
 **GENERATE PROBSHAKEMAPS**
 
-Include two utility tools ('StationRecords' and 'QueryHDF5') and the main tools to generate Probabilistic Shakemaps: 'GetStatistics' and 'EnsemblePlot'. Probabilistic Shakemaps helps visualizaing ensemble predictions at the POIs.
+Include two utility tools ('StationRecords' and 'QueryHDF5') and the main tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing ensemble predictions at the POIs.
 
 **TOOL: 'StationRecords'**
 
@@ -132,7 +132,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **TOOL: 'GetStatistics'**
 
-* Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If the user does not provide a file with scenarios weights, they are considered equally probable.
+* Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If the user does not provide a file with scenarios weights, the scenarios are considered equally probable.
 * Plots calculated statistics at each POI.
 
 ```bash
@@ -150,7 +150,7 @@ OUTPUT
 
 **TOOL: 'GetDistributions'**
 
-Plots the IMT cumulative distribution and main statistics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based an all scenarios in the ensemble.
+Plots the IMT cumulative distribution and main statistics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based on the predictions of all ensemble scenarios at that POI.
 
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool GetDistributions --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt
@@ -167,7 +167,7 @@ Plot of Datum-Ensemble comparison at each POI saved in the `DISTRIBUTIONS` folde
 
 **TOOL: 'EnsemblePlot'**
 
-Summarize the IMT distribution at the selected POIs with a boxplot. Note: the IMT distribution is based an all scenarios in the ensemble.
+Summarize the IMT distribution at the selected POIs with a boxplot. Note: the IMT distribution is based on the predictions of all ensemble scenarios at that POI.
 
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool EnsemblePlot --imt PGA --pois_file POIs.txt
@@ -189,6 +189,7 @@ When using the tools 'QueryHDF5', 'GetStatistics' and 'EnsemblePlot', the user c
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool GetStatistics --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt --pois_subset n_pois 10 max_distance 50 --pois_selection_method azimuth_uniform
 ```
+If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range max_distance +- max_distance/3.
 
 **HPC**
 
