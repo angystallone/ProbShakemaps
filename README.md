@@ -189,7 +189,7 @@ When using the tools 'QueryHDF5', 'GetStatistics' and 'EnsemblePlot', the user c
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool GetStatistics --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt --pois_subset n_pois 10 max_distance 50 --pois_selection_method azimuth_uniform
 ```
-If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range max_distance +- max_distance/3.
+If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range ```max_distance +- max_distance/3```.
 
 **HPC**
 
