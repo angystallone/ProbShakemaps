@@ -115,7 +115,7 @@ if args.task == 'GenerateProbShakemap':
                                              args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
                                              args.pois_selection_method, args.deg_round)
     
-        #GetStatistics.save_statistics()
+        GetStatistics.save_statistics()
         GetStatistics.plot_statistics()
 
     elif args.tool == 'GetDistributions':
