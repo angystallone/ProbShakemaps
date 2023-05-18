@@ -14,11 +14,9 @@ Dependencies
 Command line usage
 ------------------
 <pre>
-usage: ProbShakemaps.py [-h] --task {RunProbAnalysis,GenerateProbShakemap} [--imt {PGA,PGV}] 
-                        [--tool {StationRecords,QueryHDF5,GetStatistics,EnsemblePlot}] [--imt_min IMT_MIN] 
-                        [--imt_max IMT_MAX] [--station_file STATION_FILE] [--scenario SCENARIO] [--pois_file POIS_FILE] 
-                        [--ensemble_number ENSEMBLE_NUMBER] [--deg-round DEG_ROUND] [--pois_subset] [--n_pois N_POIS]
-                        [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}] 
+usage: ProbShakemaps.py [-h] --task {RunProbAnalysis,GenerateProbShakemap} [--imt {PGA,PGV}] [--tool {StationRecords,QueryHDF5,GetStatistics,GetDistributions,EnsemblePlot}]
+                        [--imt_min IMT_MIN] [--imt_max IMT_MAX] [--station_file STATION_FILE] [--scenario SCENARIO] [--pois_file POIS_FILE] [--ensemble_number ENSEMBLE_NUMBER]
+                        [--deg-round DEG_ROUND] [--pois_subset] [--n_pois N_POIS] [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}]
                         [--fileScenariosWeights FILESCENARIOSWEIGHTS]
 
 ProbShakemap Toolbox
@@ -30,7 +28,7 @@ input params:
   --task {RunProbAnalysis,GenerateProbShakemap}
                         Task to perform
   --imt {PGA,PGV}       Intensity measure type (IMT)
-  --tool {StationRecords,QueryHDF5,GetStatistics,EnsemblePlot}
+  --tool {StationRecords,QueryHDF5,GetStatistics,GetDistributions,EnsemblePlot}
                         Tool to use
   --imt_min IMT_MIN     Minimum value for the selected IMT (for plot only)
   --imt_max IMT_MAX     Maximum value for the selected IMT (for plot only)
@@ -48,7 +46,7 @@ input params:
   --max_distance MAX_DISTANCE
                         Max distance from epicenter of POIs in the subset
   --pois_selection_method {random,azimuth_uniform}
-                        Selection method for the POIs in the subset
+                        Selection method for the POIs of the subset
   --fileScenariosWeights FILESCENARIOSWEIGHTS
                         File with scenarios weights
 </pre>                        
@@ -94,7 +92,7 @@ OUTPUT
 
 **GENERATE PROBSHAKEMAPS**
 
-Include two utility tools ('StationRecords' and 'QueryHDF5') and the main tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing ensemble predictions at the POIs.
+Include two utility tools ('StationRecords' and 'QueryHDF5') and the main tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing and summarizing ensemble predictions at the POIs.
 
 **TOOL: 'StationRecords'**
 
@@ -123,7 +121,7 @@ OUTPUT
 
 `GMF_info.txt`: Print the ground motion fields for the selected scenario at the POIs listed in `POIs.txt`.
 
-Preview of the output file:
+Preview of an example output file:
 <pre>
 GMF realizations at Site_LAT:43.2846_LON:12.7778 for Scenario_10: [0.17520797, 0.21844997, 0.093965515, 0.27266037, 0.079073295, 0.09725358, 0.08347481, 0.06693749, 0.005907976, 0.060873847]
 GMF realizations at Site_LAT:43.1846_LON:12.8778 for Scenario_10: [0.100996606, 0.35003924, 0.24363522, 0.19941418, 0.15757227, 0.1009447, 0.19146584, 0.06460667, 0.03146108, 0.097111605]
@@ -150,7 +148,7 @@ OUTPUT
 
 **TOOL: 'GetDistributions'**
 
-Plots the IMT cumulative distribution and main statistics at a specific POI together with the estimated IMT value at the closest station (datum taken from the Shakemap .json station file). Note: the IMT cumulative distribution is based on the predictions of all ensemble scenarios at that POI.
+Plots the cumulative distribution of the predicted ground-motion values and main statistics at a specific POI together with the ground-motion value recorded at the closest station.
 
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool GetDistributions --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt
@@ -158,7 +156,8 @@ python ProbShakemaps.py --task GenerateProbShakemap --tool GetDistributions --im
 
 OUTPUT
 
-Plot of Datum-Ensemble comparison at each POI saved in the `DISTRIBUTIONS` folder
+`Distr_POI-{POI_idx}.pdf`: Plot of Datum-Ensemble comparison at a given POI
+`POIs_Map.pdf`: Spatial map of the POIs
 
 <p align="center">
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/Distr_POI-003.png" alt="DatumEnsemble" width="80%" height="80%">
@@ -167,7 +166,7 @@ Plot of Datum-Ensemble comparison at each POI saved in the `DISTRIBUTIONS` folde
 
 **TOOL: 'EnsemblePlot'**
 
-Summarize the IMT distribution at the selected POIs with a boxplot. Note: the IMT distribution is based on the predictions of all ensemble scenarios at that POI.
+Plots and summarizes the key statistical features of the distribution of predicted ground-motion values at the selected POIs with a boxplot.
 
 ```bash
 python ProbShakemaps.py --task GenerateProbShakemap --tool EnsemblePlot --imt PGA --pois_file POIs.txt
@@ -184,12 +183,12 @@ OUTPUT
 
 **POIs SUBSET OPTION**
 
-When using the tools 'QueryHDF5', 'GetStatistics' and 'EnsemblePlot', the user can also require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to ('GetStatistics' example):
+When using the tools 'QueryHDF5', 'GetStatistics', 'GetDistributions' and 'EnsemblePlot', the user can also require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to ('GetStatistics' example):
 
 ```bash
-python ProbShakemaps.py --task GenerateProbShakemap --tool GetStatistics --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt --pois_subset n_pois 10 max_distance 50 --pois_selection_method azimuth_uniform
+python ProbShakemaps.py --task GenerateProbShakemap --tool GetStatistics --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt --pois_subset --n_pois 10 --max_distance 50 --pois_selection_method azimuth_uniform
 ```
-If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range ```max_distance +- max_distance/3```.
+If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range ```max_distance +- max_distance/10```.
 
 **HPC**
 
