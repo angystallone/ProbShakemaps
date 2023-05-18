@@ -156,8 +156,8 @@ python ProbShakemaps.py --task GenerateProbShakemap --tool GetDistributions --im
 
 OUTPUT
 
-`Distr_POI-{POI_idx}.pdf`: Plot of Datum-Ensemble comparison at a given POI
-`POIs_Map.pdf`: Spatial map of the POIs
+* `Distr_POI-{POI_idx}.pdf`: Plot of Datum-Ensemble comparison at a given POI
+* `POIs_Map.pdf`: Spatial map of the POIs
 
 <p align="center">
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="80%" height="80%">
@@ -173,9 +173,8 @@ python ProbShakemaps.py --task GenerateProbShakemap --tool EnsemblePlot --imt PG
 ```
 OUTPUT
 
-`POIs_Map.pdf`: Spatial map of the POIs
-
-`Ensemble_Spread_Plot_{imt}.pdf`: Boxplot
+* `POIs_Map.pdf`: Spatial map of the POIs
+* `Ensemble_Spread_Plot_{imt}.pdf`: Boxplot
 
 <p align="center">
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/summary_stats_forReadMe.png" alt="DatumEnsemble" width="80%" height="80%">
