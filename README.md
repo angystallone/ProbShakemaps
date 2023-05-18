@@ -160,7 +160,7 @@ OUTPUT
 `POIs_Map.pdf`: Spatial map of the POIs
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/Distr_POI-003.png" alt="DatumEnsemble" width="80%" height="80%">
+    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/Distr_POI-005.png" alt="DatumEnsemble" width="80%" height="80%">
 </p>
 
 
