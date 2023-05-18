@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser(description='ProbShakemap Toolbox')
 input_params = parser.add_argument_group('input params')
 input_params.add_argument('--task', choices=['RunProbAnalysis', 'GenerateProbShakemap'], required=True, help='Task to perform')
 input_params.add_argument('--imt', choices=['PGA', 'PGV'], help='Intensity measure type (IMT)')
-input_params.add_argument('--tool', choices=['StationRecords', 'QueryHDF5', 'GetStatistics', 'EnsemblePlot'], help='Tool to use')
+input_params.add_argument('--tool', choices=['StationRecords', 'QueryHDF5', 'GetStatistics', 'GetDistributions', 'EnsemblePlot'], help='Tool to use')
 input_params.add_argument('--imt_min', type=float, help='Minimum value for the selected IMT (for plot only)')
 input_params.add_argument('--imt_max', type=float, help='Maximum value for the selected IMT (for plot only)')
 input_params.add_argument('--station_file', help='Shakemap .json station file')
@@ -109,6 +109,8 @@ if args.task == 'GenerateProbShakemap':
             raise TypeError("Station .json file from shakemap not available")
         if args.pois_file is None:
             raise TypeError("Missing required argument 'pois_file'")
+        if args.pois_subset and not args.pois_selection_method:
+            raise TypeError("Missing required argument 'pois_selection_method'")
    
         GetStatistics = tools.GetStatistics(output, Lon_Event, Lat_Event, event_dir, args.imt, args.station_file,
                                              args.imt_min, args.imt_max, args.fileScenariosWeights, 
@@ -130,6 +132,8 @@ if args.task == 'GenerateProbShakemap':
             raise TypeError("Station .json file from shakemap not available")
         if args.pois_file is None:
             raise TypeError("Missing required argument 'pois_file'")
+        if args.pois_subset and not args.pois_selection_method:
+            raise TypeError("Missing required argument 'pois_selection_method'")
    
         GetDistributions = tools.GetDistributions(output, Lon_Event, Lat_Event, event_dir, args.imt, args.station_file,
                                              args.imt_min, args.imt_max, args.fileScenariosWeights, 
@@ -144,6 +148,8 @@ if args.task == 'GenerateProbShakemap':
             raise TypeError("Missing required argument 'imt'")
         if args.pois_file is None:
             raise TypeError("Missing required argument 'pois_file'")
+        if args.pois_subset and not args.pois_selection_method:
+            raise TypeError("Missing required argument 'pois_selection_method'")
 
         EnsemblePlot = tools.EnsemblePlot(output, args.imt, Lon_Event, Lat_Event, args.pois_file, args.pois_subset, 
                                           args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method)

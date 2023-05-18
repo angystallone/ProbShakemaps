@@ -88,6 +88,9 @@ def get_pois(POIs_File, Lon_Event, Lat_Event, POIs_Subset, pois_selection_method
     
     if POIs_Subset == True:
 
+        print(f"Max distance for POIs selection = {max_distance} km")
+        print("POIs selection method = ", pois_selection_method)
+
         if pois_selection_method == 'random':
 
             random_indices = random.sample(range(len(LONs)), len(LONs))
@@ -109,12 +112,20 @@ def get_pois(POIs_File, Lon_Event, Lat_Event, POIs_Subset, pois_selection_method
                     POIs_NAMES.append(f"Site_LAT:{Point(float(lon),float(lat)).latitude}_LON:{Point(float(lon),float(lat)).longitude}")      
                     count += 1
                     if count >= n_pois:
-                        break            
+                        break        
+
+            # Save POIs to file
+            path = os.path.join(os.getcwd(), "OUTPUT")
+            pois_file = os.path.join(path, "POIs.txt")
+            with open(pois_file, "w") as f:
+                for lat, lon in zip(POIs_lat, POIs_lon):
+                    poi = lat, lon
+                    f.write(str(poi) + "\n")            
 
             return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES   
 
         if pois_selection_method == 'azimuth_uniform':
-            DIST_BUFFER = max_distance/3
+            DIST_BUFFER = max_distance/10
             indices = list(range(len(LONs)))
 
             azimuths = []
@@ -123,37 +134,47 @@ def get_pois(POIs_File, Lon_Event, Lat_Event, POIs_Subset, pois_selection_method
                 azimuths.append((azimuth + 180) % 360)  # wrap azimuths to [0, 360)
 
             # divide the azimuth range into equal segments and select the POI closest to the center of each segment
-            segment_size = 360 / n_pois
+            segment_size = 360 / 4
             segment_centers = np.arange(segment_size/2, 360, segment_size)
+            print(segment_centers)
 
             idx_POIs, POIs_lat, POIs_lon, POIs_NAMES = [], [], [], []
             found_poi_count = 0
+            pois_per_segment = int(n_pois/4)
+            print("pois_per_segment =", pois_per_segment)
             for center in segment_centers:
                 segment_indices = [j for j in indices if center - segment_size/2 <= azimuths[j] < center + segment_size/2]
                 random.shuffle(segment_indices) 
-                found_poi = False
+                segment_pois = []
                 for j in segment_indices:
                     azimuth_diff = abs(azimuths[j] - center)
-                    if azimuth_diff < segment_size/4:
+                    if azimuth_diff < segment_size:
                         distance = dist_lonlat(LONs[j], LATs[j], Lon_Event, Lat_Event, 'degree')
                         if max_distance - DIST_BUFFER <= distance <= max_distance + DIST_BUFFER:
+                            segment_pois.append(j)
                             idx_POIs.append(j)
                             POIs_lat.append(LATs[j])
                             POIs_lon.append(LONs[j])
                             POIs_NAMES.append(f"Site_LAT:{Point(float(LONs[j]), float(LATs[j])).latitude}_LON:{Point(float(LONs[j]), float(LATs[j])).longitude}")
-                            found_poi = True
-                            break # Exit inner loop after finding first POI
-                            
-                if not found_poi:
+                            if len(segment_pois) == pois_per_segment:
+                                break
+
+                if len(segment_pois) < pois_per_segment:
                     found_poi_count += 1
                     print(f"WARNING! No POIs have been found between {center - segment_size/2}° and {center + segment_size/2}°") 
                 
             if found_poi_count != 0:
                 print(found_poi_count)
-                print("**** Consider decreasing max_distance value ****")
+                print("**** Consider changing max_distance value ****")
                 sys.exit()       
  
-            print(len(idx_POIs))    
+            # Save POIs to file
+            path = os.path.join(os.getcwd(), "OUTPUT")
+            pois_file = os.path.join(path, "POIs.txt")
+            with open(pois_file, "w") as f:
+                for lat, lon in zip(POIs_lat, POIs_lon):
+                    poi = lat, lon
+                    f.write("{:.4f} {:.4f}\n".format(*poi))  
 
             return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES    
 
@@ -191,14 +212,14 @@ def pois_map(POIs_lat, POIs_lon, POIs_NAMES, Lat_Event, Lon_Event, deg_round, pa
 
     m.drawmapboundary(linewidth=2, color='black', fill_color='white')
 
-
-
     x, y = m(POIs_lon, POIs_lat)
     x_event, y_event = m(Lon_Event, Lat_Event)
 
     for i, label in enumerate(poi_indices):
-        plt.text(x[i] + 150, y[i] + 150, label, fontsize=8, color='black', weight='bold')
-    m.scatter(x, y, s=12, marker='o', color='red', label="POIs")
+        x_offset = np.random.randint(-300, 300)
+        y_offset = np.random.randint(-300, 300)
+        plt.text(x[i] + x_offset, y[i] + y_offset, label, fontsize=5, color='black')
+    m.scatter(x, y, s=10, marker='o', color='red', label="POIs")
 
     m.scatter(x_event, y_event, s=70, marker='*', color='blue', label="Epicenter")
     plt.legend(loc='lower left')
@@ -401,7 +422,6 @@ class GetStatistics:
 
             self.POIs_lat = np.array(self.POIs_lat)
             self.POIs_lon = np.array(self.POIs_lon)
-
             print("Found ", self.n_pois, "POIs")
 
         else:
@@ -413,7 +433,6 @@ class GetStatistics:
 
             self.POIs_lat = np.array(self.POIs_lat)
             self.POIs_lon = np.array(self.POIs_lon)
-
             print("Extracted ", self.n_pois, "POIs")
 
 
