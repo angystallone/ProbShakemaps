@@ -12,21 +12,27 @@ export OMP_NUM_THREADS=1
 
 #######################################################
 
-# Run Probabilistic Analysis
-python ProbShakemaps.py --task RunProbAnalysis
+# Tools 
+
+# TOOL: 'StationRecords'
+python ProbShakemaps.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
+
+# TOOL: 'Save_Output'
+python ProbShakemaps.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
+
+# TOOL: 'QueryHDF5'
+python ProbShakemaps.py --imt PGA --tool QueryHDF5 --scenario 50 --pois_file POIs.txt
+
 
 #######################################################
 
-# Generate ProbShakemaps
-
-# TOOL: 'StationRecords'
-python ProbShakemaps.py --task GenerateProbShakemap --tool StationRecords --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json
-
-# TOOL: 'QueryHDF5'
-python ProbShakemaps.py --task GenerateProbShakemap --tool QueryHDF5 --imt PGA --scenario 50 --pois_file POIs.txt
+# Prob_tools
 
 # TOOL: 'GetStatistics'
-python ProbShakemaps.py --task GenerateProbShakemap --tool GetStatistics --imt PGA --imt_min 0.01 --imt_max 10 --station_file stationlist.json --pois_file POIs.txt
+python ProbShakemaps.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
+
+# TOOL: 'GetDistributions'
+python ProbShakemaps.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
 
 # TOOL: 'EnsemblePlot'
-python ProbShakemaps.py --task GenerateProbShakemap --tool EnsemblePlot --imt PGA --pois_file POIs.txt
+python ProbShakemaps.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
