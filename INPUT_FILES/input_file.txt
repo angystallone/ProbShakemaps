@@ -2,34 +2,29 @@ TectonicRegionType: Active Shallow Crust
 Magnitude_Scaling_Relationship: Leonard2014_Interplate
 Rupture_aratio: 3
 ID_Event: 8863681
-POIsfile: grid_10km_new.txt
 Vs30file: global_italy_vs30_clobber.grd
 CorrelationModel: JB2009CorrelationModel
 CrosscorrModel: FullCrossCorrelation
 vs30_clustering: True 
 truncation_level: 3
-NumGMPEsRealizations: 10
-imts: PGA
-num_processes: 8
 
 
 ******* NOTES **********
 
 IMPORTANT!
 
-The ensemble file must be put in the folder INPUT_FILES/ENSEMBLE. The last 2 characters of the ensemble filename should indicate the ensemble sample number (i.e. '_01.txt' for ensemble 1, '_02.txt' for ensemble 2...).
+The ensemble file must be put in the folder INPUT_FILES/ENSEMBLE
 
 
 MORE ON INPUT PARAMETERS
 
 * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
+* Rupture_aratio: rupture aspect ratio as required from openquake.hazardlib.geo.surface.PlanarSurface.from_hypocenter
 * ID_Event: Shakemap ID of the event.
-* POIsfile: two space-separated columns .txt file with LAT and LON of the POIs.
 * Vs30file: GMT .grd Vs30 file; if not provided, default Vs30 value (760 m/s) is used.
 * CorrelationModel: as required from openquake.hazardlib.correlation.
 * CrosscorrModel: as required from openquake.hazardlib.cross_orrelation.
 * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
 * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
-* NumGMPEsRealizations: total number of GMPEs realizations at a specific POI for spatial and crosscorrelation of ground motion fields.
-* num_processes: number of CPU cores for code parallelization.
+
