@@ -11,15 +11,11 @@ def load_config(file):
     mag_scaling = str(lines[1].split( )[1]) 
     rupture_aratio = int(lines[2].split( )[1])
     ID_Event = str(lines[3].split( )[1])
-    POIsfile = str(lines[4].split( )[1])
-    vs30file = str(lines[5].split( )[1])
-    CorrelationModel = str(lines[6].split( )[1])
-    CrosscorrModel = str(lines[7].split( )[1])
-    vs30_clustering = bool(lines[8].split( )[1])
-    truncation_level = float(lines[9].split( )[1])
-    NumGMPEsRealizations = int(lines[10].split( )[1])
-    imts = [str(i) for i in lines[11].split( )[1].split(',')]
-    num_processes = int(lines[12].split( )[1])
+    vs30file = str(lines[4].split( )[1])
+    CorrelationModel = str(lines[5].split( )[1])
+    CrosscorrModel = str(lines[6].split( )[1])
+    vs30_clustering = bool(lines[7].split( )[1])
+    truncation_level = float(lines[8].split( )[1])
     
     # Create and return configuration dictionary
     config = {
@@ -27,15 +23,11 @@ def load_config(file):
         'mag_scaling': mag_scaling,
         'rupture_aratio': rupture_aratio,
         'ID_Event': ID_Event,
-        'POIsfile': POIsfile,
         'vs30file': vs30file,
         'CorrelationModel': CorrelationModel,
         'CrosscorrModel': CrosscorrModel,
         'vs30_clustering': vs30_clustering,
-        'truncation_level': truncation_level,
-        'NumGMPEsRealizations': NumGMPEsRealizations,
-        'imts': imts,
-        'num_processes': num_processes
+        'truncation_level': truncation_level
     }
     
     return config
