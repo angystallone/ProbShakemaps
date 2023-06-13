@@ -17,7 +17,7 @@ Command line usage
 usage: ProbShakemaps.py [-h] [--imt {PGA,PGV}] [--tool {Save_Output,StationRecords,QueryHDF5}]
                         [--prob_tool {GetStatistics,GetDistributions,EnsemblePlot} [{GetStatistics,GetDistributions,EnsemblePlot} ...]] [--numGMPEsRealizations NUMGMPESREALIZATIONS]
                         [--num_processes NUM_PROCESSES] [--imt_min IMT_MIN] [--imt_max IMT_MAX] [--station_file STATION_FILE] [--scenario SCENARIO] [--pois_file POIS_FILE]
-                        [--deg-round DEG_ROUND] [--pois_subset] [--n_pois N_POIS] [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}]
+                        [--deg_round DEG_ROUND] [--pois_subset] [--n_pois N_POIS] [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}]
                         [--fileScenariosWeights FILESCENARIOSWEIGHTS]
 
 ProbShakemap Toolbox
@@ -42,7 +42,7 @@ input params:
   --scenario SCENARIO   Scenario number
   --pois_file POIS_FILE
                         Filename with latitude and longitude of POIs
-  --deg-round DEG_ROUND
+  --deg_round DEG_ROUND
                         Rounding precision for latitude and longitude
   --pois_subset         Extract a subset of POIs
   --n_pois N_POIS       Number of POIs in the subset
