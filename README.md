@@ -99,7 +99,9 @@ OUTPUT
 
 **TOOL: 'Save_Output'**
 
-Run the probabilistic analysis and save the output to a .HDF5 file with the following hierarchical structure: scenario --> POI --> GMPEs realizations.
+Run the probabilistic analysis and save the output to a .HDF5 file with the following hierarchical structure: 
+
+scenario --> POI --> GMPEs realizations.
 
 ```bash
 python ProbShakemaps.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
@@ -115,7 +117,7 @@ OUTPUT
 Navigate and query the .HDF5 file.
 
 ```bash
-python ProbShakemaps.py --tool QueryHDF5 --imt PGA --scenario 50 --pois_file POIs.txt
+python ProbShakemaps.py --tool QueryHDF5 --imt PGA --scenario 10 --pois_file POIs.txt
 ```
 
 OUTPUT
@@ -147,7 +149,7 @@ python ProbShakemaps.py --imt PGA --prob_tool GetStatistics --num_processes 8 --
 OUTPUT
 
 * npy files with statistics saved in the `npyFiles` folder
-* Statitics map distributions saved in the `STATISTICS` folder
+* Statistics map distributions saved in the `STATISTICS` folder
 
 <p align="center">
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
