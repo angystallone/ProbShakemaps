@@ -3,6 +3,7 @@ import os
 import numpy
 import argparse
 import time
+import shutil
 
 start_time = time.time()
 
@@ -33,7 +34,7 @@ input_params.add_argument('--imt_max', type=float, help='Maximum value for the s
 input_params.add_argument('--station_file', help='Shakemap .json station file')
 input_params.add_argument('--scenario', type=float, help='Scenario number')
 input_params.add_argument('--pois_file', help='Filename with latitude and longitude of POIs')
-input_params.add_argument('--deg-round', type=float, default=5, help='Rounding precision for latitude and longitude')
+input_params.add_argument('--deg_round', type=float, default=5, help='Rounding precision for latitude and longitude')
 input_params.add_argument('--pois_subset', action='store_true', default=False, help='Extract a subset of POIs')
 input_params.add_argument('--n_pois', type=int, default=10, help='Number of POIs in the subset')
 input_params.add_argument('--max_distance', type=int, default=200, help='Max distance from epicenter of POIs in the subset')
@@ -120,6 +121,7 @@ elif args.tool == 'QueryHDF5':
 if args.prob_tool:
 
     run_main_flag = False  # Flag variable to track if Main() has been executed
+    pois_subset_flag = False  # Flag variable to track if the pois subset has already been extracted
     
     for tool in args.prob_tool:
             
@@ -148,14 +150,29 @@ if args.prob_tool:
                 SiteGmf = prob_output["SiteGmf"]
 
                 run_main_flag = True    
-                
-            GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
-                                                args.imt_min, args.imt_max, args.fileScenariosWeights, 
-                                                args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                args.pois_selection_method, args.deg_round)
 
-            GetStatistics.save_statistics()
-            GetStatistics.plot_statistics()
+            if args.pois_subset and not pois_subset_flag:
+
+                GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
+                                                    args.imt_min, args.imt_max, args.fileScenariosWeights, 
+                                                    args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
+                                                    args.pois_selection_method, args.deg_round)
+                GetStatistics.save_statistics()
+                GetStatistics.plot_statistics()
+
+                pois_subset_flag = True
+
+            elif args.pois_subset and pois_subset_flag:    
+                
+                args.pois_subset = False
+                shutil.copy2(os.path.join(os.getcwd(), "OUTPUT", "POIs.txt"), os.path.join(os.getcwd(), "INPUT_FILES", "POIs.txt"))
+                args.pois_file = "POIs.txt"
+                GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
+                                                    args.imt_min, args.imt_max, args.fileScenariosWeights, 
+                                                    args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
+                                                    args.pois_selection_method, args.deg_round)
+                GetStatistics.save_statistics()
+                GetStatistics.plot_statistics()
 
 
         elif tool == 'GetDistributions':
@@ -186,12 +203,27 @@ if args.prob_tool:
 
                 run_main_flag = True    
 
-            GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, args.station_file,
-                                                    args.imt_min, args.imt_max, args.fileScenariosWeights, 
-                                                    args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                    args.pois_selection_method, args.deg_round)
+            if args.pois_subset and not pois_subset_flag:    
 
-            GetDistributions.plot_distributions() 
+                GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, 
+                                                          args.imt, args.station_file, args.imt_min, args.imt_max, args.fileScenariosWeights, 
+                                                          args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
+                                                          args.pois_selection_method, args.deg_round)
+                GetDistributions.plot_distributions() 
+                pois_subset_flag = True
+
+            elif args.pois_subset and pois_subset_flag:    
+                
+                args.pois_subset = False
+                shutil.copy2(os.path.join(os.getcwd(), "OUTPUT", "POIs.txt"), os.path.join(os.getcwd(), "INPUT_FILES", "POIs.txt"))
+                args.pois_file = "POIs.txt"
+
+                
+                GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, 
+                                                          args.imt, args.station_file, args.imt_min, args.imt_max, args.fileScenariosWeights, 
+                                                          args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
+                                                          args.pois_selection_method, args.deg_round)
+                GetDistributions.plot_distributions()   
 
 
         elif tool == 'EnsemblePlot':
@@ -215,10 +247,21 @@ if args.prob_tool:
                 SiteGmf = prob_output["SiteGmf"]
                 run_main_flag = True    
 
-            EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
-                                                args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method)
+            if args.pois_subset and not pois_subset_flag:
 
-            EnsemblePlot.plot()
+                EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
+                                                    args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method)
+                EnsemblePlot.plot()
+                pois_subset_flag = True
+
+            elif args.pois_subset and pois_subset_flag:    
+                
+                args.pois_subset = False
+                shutil.copy2(os.path.join(os.getcwd(), "OUTPUT", "POIs.txt"), os.path.join(os.getcwd(), "INPUT_FILES", "POIs.txt"))
+                args.pois_file = "POIs.txt"
+                EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
+                                                    args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method)
+                EnsemblePlot.plot()
 
         else:
 
