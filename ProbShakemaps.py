@@ -120,8 +120,8 @@ elif args.tool == 'QueryHDF5':
 
 if args.prob_tool:
 
-    run_main_flag = False  # Flag variable to track if Main() has been executed
-    pois_subset_flag = False  # Flag variable to track if the pois subset has already been extracted
+    run_main_flag = True  # Flag variable to track if Main() has been executed
+    pois_subset_flag = True  # Flag variable to track if the pois subset has already been extracted
     
     for tool in args.prob_tool:
             
@@ -137,7 +137,7 @@ if args.prob_tool:
                 if args.n_pois % 4 > 0:
                     raise TypeError("Select a number of POIs divisible by 4")
 
-            if run_main_flag == False:
+            if run_main_flag:
 
                 if args.imt is None:
                     raise TypeError("Missing required argument 'imt'")
@@ -149,30 +149,16 @@ if args.prob_tool:
                 prob_output = run_main()
                 SiteGmf = prob_output["SiteGmf"]
 
-                run_main_flag = True    
+                run_main_flag = False    
 
-            if args.pois_subset and not pois_subset_flag:
+            GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
+                                                args.imt_min, args.imt_max, args.fileScenariosWeights, 
+                                                args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
+                                                args.pois_selection_method, args.deg_round, pois_subset_flag)
+            GetStatistics.save_statistics()
+            GetStatistics.plot_statistics()
 
-                GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
-                                                    args.imt_min, args.imt_max, args.fileScenariosWeights, 
-                                                    args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                    args.pois_selection_method, args.deg_round)
-                GetStatistics.save_statistics()
-                GetStatistics.plot_statistics()
-
-                pois_subset_flag = True
-
-            elif args.pois_subset and pois_subset_flag:    
-                
-                args.pois_subset = False
-                shutil.copy2(os.path.join(os.getcwd(), "OUTPUT", "POIs.txt"), os.path.join(os.getcwd(), "INPUT_FILES", "POIs.txt"))
-                args.pois_file = "POIs.txt"
-                GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
-                                                    args.imt_min, args.imt_max, args.fileScenariosWeights, 
-                                                    args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                    args.pois_selection_method, args.deg_round)
-                GetStatistics.save_statistics()
-                GetStatistics.plot_statistics()
+            pois_subset_flag = False
 
 
         elif tool == 'GetDistributions':
@@ -189,7 +175,7 @@ if args.prob_tool:
                 if args.n_pois % 4 > 0:
                     raise TypeError("Select a number of POIs divisible by 4")
 
-            if run_main_flag == False:
+            if run_main_flag:
 
                 if args.imt is None:
                     raise TypeError("Missing required argument 'imt'")
@@ -201,29 +187,14 @@ if args.prob_tool:
                 prob_output = run_main()
                 SiteGmf = prob_output["SiteGmf"]
 
-                run_main_flag = True    
+                run_main_flag = False    
 
-            if args.pois_subset and not pois_subset_flag:    
-
-                GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, 
-                                                          args.imt, args.station_file, args.imt_min, args.imt_max, args.fileScenariosWeights, 
-                                                          args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                          args.pois_selection_method, args.deg_round)
-                GetDistributions.plot_distributions() 
-                pois_subset_flag = True
-
-            elif args.pois_subset and pois_subset_flag:    
-                
-                args.pois_subset = False
-                shutil.copy2(os.path.join(os.getcwd(), "OUTPUT", "POIs.txt"), os.path.join(os.getcwd(), "INPUT_FILES", "POIs.txt"))
-                args.pois_file = "POIs.txt"
-
-                
-                GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, 
-                                                          args.imt, args.station_file, args.imt_min, args.imt_max, args.fileScenariosWeights, 
-                                                          args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                          args.pois_selection_method, args.deg_round)
-                GetDistributions.plot_distributions()   
+            GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, 
+                                                        args.imt, args.station_file, args.imt_min, args.imt_max, args.fileScenariosWeights, 
+                                                        args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
+                                                        args.pois_selection_method, args.deg_round, pois_subset_flag)
+            GetDistributions.plot_distributions() 
+            pois_subset_flag = False
 
 
         elif tool == 'EnsemblePlot':
@@ -234,7 +205,7 @@ if args.prob_tool:
                 if args.n_pois % 4 > 0:
                     raise TypeError("Select a number of POIs divisible by 4")
 
-            if run_main_flag == False:
+            if run_main_flag:
 
                 if args.pois_file is None:
                     raise TypeError("Missing required argument 'pois_file'")
@@ -245,23 +216,12 @@ if args.prob_tool:
                     
                 prob_output = run_main()
                 SiteGmf = prob_output["SiteGmf"]
-                run_main_flag = True    
+                run_main_flag = False    
 
-            if args.pois_subset and not pois_subset_flag:
-
-                EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
-                                                    args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method)
-                EnsemblePlot.plot()
-                pois_subset_flag = True
-
-            elif args.pois_subset and pois_subset_flag:    
-                
-                args.pois_subset = False
-                shutil.copy2(os.path.join(os.getcwd(), "OUTPUT", "POIs.txt"), os.path.join(os.getcwd(), "INPUT_FILES", "POIs.txt"))
-                args.pois_file = "POIs.txt"
-                EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
-                                                    args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method)
-                EnsemblePlot.plot()
+            EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
+                                                args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method, pois_subset_flag)
+            EnsemblePlot.plot()
+            pois_subset_flag = False
 
         else:
 
@@ -272,4 +232,4 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 
 
-
+           

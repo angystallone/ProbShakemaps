@@ -15,6 +15,7 @@ from mapio.gmt import GMTGrid
 
 from configobj import ConfigObj
 
+import shutil
 import numpy as np
 from numpy import save
 import os
@@ -150,9 +151,9 @@ def get_pois_subset(POIs_File, Lon_Event, Lat_Event, pois_selection_method, n_po
         path = os.path.join(os.getcwd(), "OUTPUT")
         pois_file = os.path.join(path, "POIs.txt")
         with open(pois_file, "w") as f:
-            for lat, lon in zip(POIs_lat, POIs_lon):
+            for idx, lat, lon in zip(idx_POIs, POIs_lat, POIs_lon):
                 poi = lat, lon
-                f.write("{:.6f} {:.6f}\n".format(*poi))             
+                f.write("{} {:.6f} {:.6f}\n".format(idx, *poi))             
 
         return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES   
 
@@ -204,11 +205,35 @@ def get_pois_subset(POIs_File, Lon_Event, Lat_Event, pois_selection_method, n_po
         path = os.path.join(os.getcwd(), "OUTPUT")
         pois_file = os.path.join(path, "POIs.txt")
         with open(pois_file, "w") as f:
-            for lat, lon in zip(POIs_lat, POIs_lon):
+            for idx, lat, lon in zip(idx_POIs, POIs_lat, POIs_lon):
                 poi = lat, lon
-                f.write("{:.6f} {:.6f}\n".format(*poi))  
+                f.write("{} {:.6f} {:.6f}\n".format(idx, *poi))  
 
         return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES
+    
+
+def share_pois(POIs_File):
+
+    start_path = os.path.join(os.getcwd(), "OUTPUT/")
+    end_path = os.path.join(os.getcwd(), "INPUT_FILES/")
+    shutil.copy2(os.path.join(os.getcwd(), start_path, POIs_File), os.path.join(os.getcwd(), end_path, POIs_File))
+
+    file = os.path.join(os.getcwd(), end_path, POIs_File)
+
+    idx_POIs = [] 
+    POIs_lat, POIs_lon, POIs_NAMES = [], [], []
+    with open(file, 'r') as f:
+        for line in f:
+            idx = int(line.strip().split()[0])
+            lat = float(line.strip().split()[1])
+            lon = float(line.strip().split()[2])
+            idx_POIs.append(idx)
+            POIs_lat.append(lat)
+            POIs_lon.append(lon)
+            POIs_NAMES.append(f"Site_LAT:{Point(float(lon),float(lat)).latitude}_LON:{Point(float(lon),float(lat)).longitude}")
+            n_pois = len(POIs_NAMES) 
+
+    return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES, n_pois      
 
 
 # def get_poi_dict(POIs_NAMES):
@@ -772,6 +797,21 @@ class StationRecords:
         print(f"{self.imt} range: {np.min(data_imt)} - {np.max(data_imt)}")
 
         return data_imt
+    
+    def get_stations(self):    
+
+        file_station = os.path.join(self.event_dir, self.stationfile)
+
+        with open(file_station) as json_file:
+
+            data = json.load(json_file)
+            station_id = [] * len(data['features'][:])
+            station_name = [] * len(data['features'][:])
+            for i in range(len(data['features'][:])):
+                station_id.append(data['features'][i]['properties']['code'])
+                station_name.append(data['features'][i]['properties']['name'])
+
+        return station_id, station_name
 
     def plot(self):
 
@@ -884,7 +924,8 @@ class QueryHDF5:
 class GetStatistics:
     def __init__(self, SiteGmf, EnsembleSize, Lon_Event, Lat_Event, NumGMPEsRealizations,
                   event_dir, IMT, imt_min, imt_max, fileScenariosWeights, 
-                 pois_file, pois_subset, n_pois, max_distance, pois_selection_method, deg_round):
+                 pois_file, pois_subset, n_pois, max_distance, pois_selection_method, deg_round,
+                 pois_subset_flag):
 
         self.NumGMPEsRealizations = NumGMPEsRealizations
         self.SiteGmf = SiteGmf
@@ -902,29 +943,40 @@ class GetStatistics:
         self.max_distance = max_distance
         self.pois_selection_method = pois_selection_method
         self.deg_round = deg_round
+        self.pois_subset_flag = bool(pois_subset_flag)
 
         print("Lat Event = ", self.Lat_Event)
         print("Lon Event = ", self.Lon_Event)   
 
         print("Number of source scenarios = ", self.EnsembleSize)
 
-        if self.pois_subset == False:  
+        if self.pois_subset_flag:
+            if self.pois_subset == False:  
 
-            self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = get_pois(self.pois_file)
-            self.POIs_lat = np.array(self.POIs_lat)
-            self.POIs_lon = np.array(self.POIs_lon)
-            print("Found ", self.n_pois, "POIs")
+                self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = get_pois(self.pois_file)
+                self.POIs_lat = np.array(self.POIs_lat)
+                self.POIs_lon = np.array(self.POIs_lon)
+                print("Found ", self.n_pois, "POIs")
+                self.i_pois = list(range(self.n_pois))
+
+            else:
+
+                self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES = get_pois_subset(self.pois_file, Lon_Event, Lat_Event, 
+                                                                self.pois_selection_method, self.n_pois, self.max_distance)
+        
+                self.n_pois = n_pois
+                self.POIs_lat = np.array(self.POIs_lat)
+                self.POIs_lon = np.array(self.POIs_lon)
+                print("Extracted ", self.n_pois, "POIs")
+                self.i_pois = self.idx_POIs
 
         else:
-
-            self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES = get_pois_subset(self.pois_file, Lon_Event, Lat_Event, 
-                                                            self.pois_selection_method, self.n_pois, self.max_distance)
-    
-            self.n_pois = n_pois
+            self.pois_file = "POIs.txt"
+            self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = share_pois(self.pois_file)
             self.POIs_lat = np.array(self.POIs_lat)
             self.POIs_lon = np.array(self.POIs_lon)
-            print("Extracted ", self.n_pois, "POIs")
-
+            print("Found ", self.n_pois, "POIs in the shared file ", self.pois_file)
+            self.i_pois = self.idx_POIs
 
     def calc_statistics(self):
 
@@ -954,18 +1006,13 @@ class GetStatistics:
         vector = np.zeros([self.n_pois, self.NumGMPEsRealizations * self.EnsembleSize])
         weight = np.zeros([self.n_pois, self.NumGMPEsRealizations * self.EnsembleSize]) 
 
-        if self.pois_subset == False:
-            i_pois = list(range(self.n_pois))
-        else:
-            i_pois = self.idx_POIs
-
         for jp in range(self.n_pois):
 
             # STEP 1: evaluate distributions mixing events in the ensemble
 
             for i_scen in range(self.EnsembleSize):
 
-                imt_values = np.asarray(self.SiteGmf[i_scen][i_pois[jp]])
+                imt_values = np.asarray(self.SiteGmf[i_scen][self.i_pois[jp]])
 
                 a, b = np.histogram(imt_values, thresholds_lim) 
                 prob = a / self.NumGMPEsRealizations
@@ -1090,7 +1137,8 @@ class GetStatistics:
 
 class GetDistributions:
     def __init__(self, SiteGmf, EnsembleSize, Lon_Event, Lat_Event, NumGMPEsRealizations, event_dir, IMT, stationfile, imt_min, imt_max, 
-                 fileScenariosWeights, pois_file, pois_subset, n_pois, max_distance, pois_selection_method, deg_round):
+                 fileScenariosWeights, pois_file, pois_subset, n_pois, max_distance, pois_selection_method, deg_round,
+                 pois_subset_flag):
 
         self.SiteGmf = SiteGmf
         self.EnsembleSize = EnsembleSize
@@ -1109,27 +1157,38 @@ class GetDistributions:
         self.max_distance = max_distance
         self.pois_selection_method = pois_selection_method
         self.deg_round = deg_round
+        self.pois_subset_flag = bool(pois_subset_flag)
 
         print("Lat Event = ", self.Lat_Event)
         print("Lon Event = ", self.Lon_Event)   
 
-        if self.pois_subset == False:  
+        if self.pois_subset_flag:
+            if self.pois_subset == False:  
 
-            self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = get_pois(self.pois_file)
-            self.POIs_lat = np.array(self.POIs_lat)
-            self.POIs_lon = np.array(self.POIs_lon)
-            print("Found ", self.n_pois, "POIs")
+                self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = get_pois(self.pois_file)
+                self.POIs_lat = np.array(self.POIs_lat)
+                self.POIs_lon = np.array(self.POIs_lon)
+                print("Found ", self.n_pois, "POIs")
+                self.i_pois = list(range(self.n_pois))
+
+            else:
+
+                self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES = get_pois_subset(self.pois_file, Lon_Event, Lat_Event, 
+                                                                self.pois_selection_method, self.n_pois, self.max_distance)
+    
+                self.n_pois = n_pois
+                self.POIs_lat = np.array(self.POIs_lat)
+                self.POIs_lon = np.array(self.POIs_lon)
+                print("Extracted ", self.n_pois, "POIs")
+                self.i_pois = self.idx_POIs
 
         else:
-
-            self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES = get_pois_subset(self.pois_file, Lon_Event, Lat_Event, 
-                                                            self.pois_selection_method, self.n_pois, self.max_distance)
-   
-            self.n_pois = n_pois
+            self.pois_file = "POIs.txt"
+            self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = share_pois(self.pois_file)       
             self.POIs_lat = np.array(self.POIs_lat)
             self.POIs_lon = np.array(self.POIs_lon)
-            print("Extracted ", self.n_pois, "POIs")
-
+            print("Found ", self.n_pois, "POIs in the shared file ", self.pois_file)
+            self.i_pois = self.idx_POIs
 
     def plot_distributions(self):
 
@@ -1143,6 +1202,7 @@ class GetDistributions:
 
         data_lon, data_lat = StationRecords.get_data_coord(self)
         data_imt = StationRecords.get_data(self)
+        station_id, station_name = StationRecords.get_stations(self)
 
         for iPoi in range(self.n_pois):
             
@@ -1170,6 +1230,8 @@ class GetDistributions:
             datum_lon = data_lon[isel]
             datum_lat = data_lat[isel]
             datum_dist = tmp_dist[isel]
+            station_id_isel = station_id[isel]
+            station_name_isel = station_name[isel]
 
             print('---- POINT ', iPoi + 1, '-----')
             print('POI Coord : ', selPOI_lon,'/', selPOI_lat)
@@ -1208,6 +1270,8 @@ class GetDistributions:
             
             x, y = m(self.Lon_Event, self.Lat_Event)
             m.plot(x, y, '*', label='Epicenter')
+
+            plt.title(f"Station Code: {station_id_isel}, Station Name: {station_name_isel}", fontsize=10)
             
             plt.legend()
             
@@ -1225,9 +1289,9 @@ class GetDistributions:
             plt.semilogx([selPOI_p10_vec, selPOI_p10_vec], [0,1], 'k:', label='10th & 90th percentiles')
             plt.semilogx([selPOI_p90_vec, selPOI_p90_vec], [0,1], 'k:')
             if self.imt == 'PGV':
-                plt.title(f"{self.imt} = {datum:.4f} cm/s, distance: {datum_dist:.0f} km")
+                plt.title(f"{self.imt} = {datum:.4f} cm/s, distance: {datum_dist:.0f} km", fontsize=10)
             else:
-                plt.title(f"{self.imt} = {datum:.4f} g, distance: {datum_dist:.0f} km")
+                plt.title(f"{self.imt} = {datum:.4f} g, distance: {datum_dist:.0f} km", fontsize=10)
 
             plt.legend()
             
@@ -1250,7 +1314,7 @@ class GetDistributions:
 
 class EnsemblePlot:
     def __init__(self, SiteGmf, IMT, Lon_Event, Lat_Event, EnsembleSize, pois_file, pois_subset, n_pois, max_distance,
-                  deg_round, pois_selection_method):
+                  deg_round, pois_selection_method, pois_subset_flag):
 
         self.SiteGmf = SiteGmf
         self.EnsembleSize = EnsembleSize
@@ -1263,37 +1327,43 @@ class EnsemblePlot:
         self.max_distance = max_distance     
         self.deg_round = deg_round
         self.pois_selection_method = pois_selection_method
+        self.pois_subset_flag = bool(pois_subset_flag)
 
         print("Lat Event = ", self.Lat_Event)
         print("Lon Event = ", self.Lon_Event)   
         print("Number of source scenarios = ", self.EnsembleSize)
 
-        if self.pois_subset == False:  
+        if self.pois_subset_flag:
+            if self.pois_subset == False:  
 
-            self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = get_pois(self.pois_file)
-            self.POIs_lat = np.array(self.POIs_lat)
-            self.POIs_lon = np.array(self.POIs_lon)
-            print("Found ", self.n_pois, "POIs")
+                self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = get_pois(self.pois_file)
+                self.POIs_lat = np.array(self.POIs_lat)
+                self.POIs_lon = np.array(self.POIs_lon)
+                print("Found ", self.n_pois, "POIs")
+                self.i_pois = list(range(self.n_pois))
+
+            else:
+
+                self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES = get_pois_subset(self.pois_file, Lon_Event, Lat_Event, 
+                                                                    self.pois_selection_method, self.n_pois, self.max_distance)
+                    
+                self.n_pois = n_pois
+                self.POIs_lat = np.array(self.POIs_lat)
+                self.POIs_lon = np.array(self.POIs_lon)
+                print("Extracted ", self.n_pois, "POIs")
+                self.i_pois = self.idx_POIs
 
         else:
-
-            self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES = get_pois_subset(self.pois_file, Lon_Event, Lat_Event, 
-                                                                self.pois_selection_method, self.n_pois, self.max_distance)
-                
-            self.n_pois = n_pois
+            self.pois_file = "POIs.txt"
+            self.idx_POIs, self.POIs_lat, self.POIs_lon, self.POIs_NAMES, self.n_pois = share_pois(self.pois_file)
             self.POIs_lat = np.array(self.POIs_lat)
             self.POIs_lon = np.array(self.POIs_lon)
-            print("Extracted ", self.n_pois, "POIs")
-
+            print("Found ", self.n_pois, "POIs in the shared file ", self.pois_file)
+            self.i_pois = self.idx_POIs
 
     def plot(self):
 
         print("********* GENERATING ENSEMBLE PLOT *******")
-
-        if self.pois_subset == False:
-            i_pois = list(range(self.n_pois))
-        else:
-            i_pois = self.idx_POIs
 
         poi_indices = [idx + 1 for idx in range(self.n_pois)]
 
@@ -1307,7 +1377,7 @@ class EnsemblePlot:
             # Loop over POIs in the current scenario
             for i_poi in range(self.n_pois):
                 # Get the distribution of IMT values for the POI if in list POIs
-                pga_dist = np.array(self.SiteGmf[i_scen][i_pois[i_poi]])
+                pga_dist = np.array(self.SiteGmf[i_scen][self.i_pois[i_poi]])
                 # Calculate the mean IMT value for the current POI
                 mean_scen[i_poi] += np.mean(pga_dist)
 
