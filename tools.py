@@ -982,7 +982,7 @@ class GetStatistics:
 
         thresholds_stat_names = ['Mean','Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90']
         thresholds_stat = np.zeros([len(thresholds_stat_names), self.n_pois])
-        vector_stat = np.zeros([len(thresholds_stat_names), self.n_pois])
+        vector_stat = np.zeros([len(thresholds_stat_names) + 2, self.n_pois])
         thresholds_n = 6000
         thresholds_lim = np.linspace(0, 2, thresholds_n + 1)
         thresholds_cent = 0.5 * (thresholds_lim[0 : len(thresholds_lim) - 1] + thresholds_lim[1 : len(thresholds_lim)])
@@ -1052,7 +1052,10 @@ class GetStatistics:
             vector_stat[3][jp] = weighted_percentile(vector[jp],weight[jp],0.1)
             vector_stat[4][jp] = weighted_percentile(vector[jp],weight[jp],0.2)
             vector_stat[5][jp] = weighted_percentile(vector[jp],weight[jp],0.8)
-            vector_stat[6][jp] = weighted_percentile(vector[jp],weight[jp],0.9) 
+            vector_stat[6][jp] = weighted_percentile(vector[jp],weight[jp],0.9)
+            # 5th-95th percentiles for boxplot later 
+            vector_stat[7][jp] = weighted_percentile(vector[jp],weight[jp],0.05)
+            vector_stat[8][jp] = weighted_percentile(vector[jp],weight[jp],0.95) 
 
         stats = {} 
         stats['thresholds_stat'] = thresholds_stat
@@ -1313,14 +1316,16 @@ class GetDistributions:
 
 
 class EnsemblePlot:
-    def __init__(self, SiteGmf, IMT, Lon_Event, Lat_Event, EnsembleSize, pois_file, pois_subset, n_pois, max_distance,
-                  deg_round, pois_selection_method, pois_subset_flag):
+    def __init__(self, SiteGmf, IMT, Lon_Event, Lat_Event, EnsembleSize, NumGMPEsRealizations, fileScenariosWeights, pois_file, 
+                 pois_subset, n_pois, max_distance, deg_round, pois_selection_method, pois_subset_flag):
 
         self.SiteGmf = SiteGmf
         self.EnsembleSize = EnsembleSize
         self.imt = IMT
         self.Lon_Event = Lon_Event
         self.Lat_Event = Lat_Event
+        self.NumGMPEsRealizations = NumGMPEsRealizations
+        self.fileScenariosWeights = fileScenariosWeights
         self.pois_file = pois_file
         self.pois_subset = bool(pois_subset)
         self.n_pois = n_pois
@@ -1367,40 +1372,35 @@ class EnsemblePlot:
 
         poi_indices = [idx + 1 for idx in range(self.n_pois)]
 
-        # Loop over all scens
-        mean_all_scens = np.zeros((self.n_pois, self.EnsembleSize))
-        for i_scen in range(self.EnsembleSize):
-            # Initialize an empty array to store the mean PGA values for each POI for the current scenario
-            mean_scen = np.zeros((self.n_pois,))
-            #print(self.n_pois)
+        stats, _ = GetStatistics.calc_statistics(self)
+        vector_stat = stats['vector_stat'] 
 
-            # Loop over POIs in the current scenario
-            for i_poi in range(self.n_pois):
-                # Get the distribution of IMT values for the POI if in list POIs
-                pga_dist = np.array(self.SiteGmf[i_scen][self.i_pois[i_poi]])
-                # Calculate the mean IMT value for the current POI
-                mean_scen[i_poi] += np.mean(pga_dist)
-
-            # Store the mean IMT values for all POIs for the current scenario
-            mean_all_scens[:, i_scen] = mean_scen        
-    
-        # Create the ensemble spread plot
         fig, ax = plt.subplots()
-        boxplot = ax.boxplot(mean_all_scens.T, positions=poi_indices, sym='', whis=[5, 95], widths=0.6)
-        # set x-axis labels to POI indexes
+        for iPoi in range(self.n_pois):
+            median = vector_stat[2][iPoi]
+            selPOI_p5_vec = vector_stat[7][iPoi]
+            selPOI_p95_vec = vector_stat[8][iPoi]
+                        
+            whiskerprops = dict(color='black')
+            flierprops = dict(marker='o', markerfacecolor='red', markersize=8, linestyle='none')
+            medianprops = dict(color='blue')
+            
+            ax.boxplot([[]], positions=[poi_indices[iPoi]], widths=0.6, showfliers=False, whiskerprops=whiskerprops, medianprops=medianprops, flierprops=flierprops)
+            ax.vlines(poi_indices[iPoi], selPOI_p5_vec, selPOI_p95_vec, color='black')
+            median_handle = ax.scatter(poi_indices[iPoi], median, color='orange', zorder=3)
+            p5_handle = ax.scatter(poi_indices[iPoi], selPOI_p5_vec, color='gray', zorder=3)
+            p95_handle = ax.scatter(poi_indices[iPoi], selPOI_p95_vec, color='gray', zorder=3)
+
+        handles = [median_handle, p5_handle]
+        labels = ['Median', '5th-95th percentiles']
+        ax.legend(handles, labels, loc='upper right')
         ax.set_xticklabels(poi_indices)
-
-        median_patch = mpatches.Patch(color='orange', label='Median')
-        whisker_patch = mpatches.Patch(color='gray', label='5th-95th Percentiles')
-        plt.legend(handles=[median_patch, whisker_patch], loc='upper right')
-
-        # set axis labels and title
         ax.set_xlabel('POI index', fontsize=16)
         if self.imt == 'PGA':
             ax.set_ylabel(f"{self.imt} mean (g)", fontsize=16)
         if self.imt == 'PGV':
             ax.set_ylabel(f"{self.imt} mean (cm/s)", fontsize=16)  
-
+   
         path = os.path.join(os.getcwd(), "OUTPUT/")
         fig.savefig(path + f"/Ensemble_Spread_Plot_{self.imt}.pdf", bbox_inches='tight')
         plt.close(fig)

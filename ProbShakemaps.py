@@ -218,8 +218,8 @@ if args.prob_tool:
                 SiteGmf = prob_output["SiteGmf"]
                 run_main_flag = False    
 
-            EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.pois_file, args.pois_subset, 
-                                                args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method, pois_subset_flag)
+            EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.numGMPEsRealizations, args.fileScenariosWeights, args.pois_file,
+                                                 args.pois_subset, args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method, pois_subset_flag)
             EnsemblePlot.plot()
             pois_subset_flag = False
 
