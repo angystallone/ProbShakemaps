@@ -1274,7 +1274,7 @@ class GetDistributions:
             x, y = m(self.Lon_Event, self.Lat_Event)
             m.plot(x, y, '*', label='Epicenter')
 
-            plt.title(f"Station Code: {station_id_isel}, Station Name: {station_name_isel}", fontsize=10)
+            plt.title(f"Station: {station_id_isel} ({station_name_isel})", fontsize=10)
             
             plt.legend()
             
@@ -1285,7 +1285,10 @@ class GetDistributions:
             plt.plot(selPOI_CDF_vec_vals, 1-selPOI_CDF_vec_ecdf,'k-',label='CDF')
             plt.grid()
             plt.plot([datum,datum], [0,1], 'r-', label='Observation')
-            plt.xlabel(f"{self.imt}")
+            if self.imt == 'PGA':
+                plt.xlabel(f"{self.imt} (g)")
+            if self.imt == 'PGV':
+                plt.xlabel(f"{self.imt} (cm/s)")
             plt.ylabel("CDF")
             
             plt.semilogx([selPOI_p50_vec, selPOI_p50_vec], [0,1], 'k--', label='Median')    
