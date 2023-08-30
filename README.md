@@ -205,6 +205,10 @@ If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in 
 
 ```ProbShakemaps``` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,```--imt_min```, ```--imt_max```, ```--pois_subset``` etc.).
 
+```bash
+python ProbShakemaps.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
+```
+
 **HPC**
 
 ```ProbShakemaps```  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemaps/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
