@@ -203,7 +203,7 @@ If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in 
 
 **MULTIPLE TOOLS AT THE SAME TIME**
 
-```ProbShakemaps``` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,```--imt_min```, ```--imt_max```, ```--pois_subset``` etc.).
+```ProbShakemaps``` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,```--imt_min```, ```--imt_max```, ```--pois_subset``` etc.). For example:
 
 ```bash
 python ProbShakemaps.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
