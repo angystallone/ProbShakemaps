@@ -22,9 +22,11 @@ MORE ON INPUT PARAMETERS
 * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
 * Rupture_aratio: rupture aspect ratio as required from openquake.hazardlib.geo.surface.PlanarSurface.from_hypocenter
 * ID_Event: Shakemap ID of the event.
-* Vs30file: GMT .grd Vs30 file; if not provided, default Vs30 value (760 m/s) is used.
+* Vs30file: GMT .grd Vs30 file; if not provided, set it to None. Default Vs30 value (760 m/s) will be used instead.
 * CorrelationModel: as required from openquake.hazardlib.correlation.
 * CrosscorrModel: as required from openquake.hazardlib.cross_orrelation.
 * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
 * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
+
+
 
