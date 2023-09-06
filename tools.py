@@ -198,7 +198,7 @@ def get_pois_subset(POIs_File, Lon_Event, Lat_Event, pois_selection_method, n_po
             
         if found_poi_count != 0:
             print(found_poi_count)
-            print("**** Consider changing max_distance value ****")
+            print("Consider changing max_distance value")
             sys.exit()       
 
         # Save POIs to file
@@ -296,6 +296,7 @@ def get_params():
     if not os.path.exists(event_dir):
         raise NotADirectoryError(f"{event_dir} is not a valid directory.")
 
+    # Load the event file
     eventxml = os.path.join(event_dir, "event.xml")    
     if not os.path.isfile(eventxml):
         raise FileNotFoundError(f"{eventxml} does not exist.")   
@@ -303,9 +304,10 @@ def get_params():
     # Parse the eventxml file
     tree = ET.parse(eventxml)
     root = tree.getroot()
+
     # Get the latitude and longitude of the event
-    Lat_Event = root.attrib['lat']
-    Lon_Event = root.attrib['lon']
+    Lat_Event = root.attrib.get('lat') 
+    Lon_Event = root.attrib.get('lon') 
 
     listscenarios_dir = os.getcwd() + "/INPUT_FILES/ENSEMBLE/"
     scenarios_file = [name for name in os.listdir(listscenarios_dir) if name != ".DS_Store"]
@@ -441,11 +443,13 @@ class Main:
         module = importlib.import_module('openquake.hazardlib.scalerel')
         msr = getattr(module, mag_scaling)
 
+        print("Rupture aspect ratio: " + str(rupture_aratio))
+
         print("Event ID: " + ID_Event)
 
         print("POIs file: " + self.pois_file)
 
-        if vs30file == "":
+        if vs30file == None:
             print("Vs30 file not provided")
         else:
             print("Vs30 file: " + vs30file)    
@@ -502,13 +506,18 @@ class Main:
         config_modules = ConfigObj(conf_filename)
 
         # Get GMPEs acronyms
-        GMPEs_Acronym, GMPEs_Weights, GMPEs_Names = [], [], []
         for key, _ in config_gmpe_sets['gmpe_sets'].items():
             if key in GMPE_Set:
-                GMPEs_Acronym.append(config_gmpe_sets['gmpe_sets'][key]['gmpes'])
-                GMPEs_Weights.append(float(config_gmpe_sets['gmpe_sets'][key]['weights']))
-
+                if not isinstance(config_gmpe_sets['gmpe_sets'][key]['gmpes'], list):
+                    GMPEs_Acronym, GMPEs_Weights = [], []
+                    GMPEs_Acronym.append(config_gmpe_sets['gmpe_sets'][key]['gmpes'])
+                    GMPEs_Weights.append(float(config_gmpe_sets['gmpe_sets'][key]['weights']))
+                else:
+                    GMPEs_Acronym = config_gmpe_sets['gmpe_sets'][key]['gmpes']
+                    GMPEs_Weights = [float(i) for i in config_gmpe_sets['gmpe_sets'][key]['weights'] ]
+                    
         # Get GMPEs from the acronyms
+        GMPEs_Names = []
         for key, item in config_modules['gmpe_modules'].items():  
             if key in GMPEs_Acronym:
                 print(f"Importing {item[0]}")
@@ -519,7 +528,7 @@ class Main:
         for elem in GMPEs_Names:
             gmpes.append(valid.gsim(elem))  # OQ equivalent of getattr
 
-        if vs30file:
+        if vs30file is not None:
 
             print("********* LOADING Vs30 *******")
             # Vs30
@@ -534,12 +543,11 @@ class Main:
         sites = []
         for i in range(len(self.POIs_NAMES)):
             site_location = Point(self.POIs_lon[i], self.POIs_lat[i])
-            # If Vs30 file is provided
-            if vs30file:
+            if vs30file == None:
+                # If Vs30 file is not provided, use default value for Vs30
+                site = Site(location=site_location, vs30=760., vs30measured=False, z1pt0=40., z2pt5=1.0)
+            else:    
                 site = Site(location=site_location, vs30=vs30_POIs[i], vs30measured=False, z1pt0=40., z2pt5=1.0)
-            # If Vs30 file is not provided, use default value for Vs30
-            else:
-                site = Site(location=site_location, vs30=760., z1pt0=40., z2pt5=1.0)
             sites.append(site)
             
         Site_Collection = SiteCollection(sites)
@@ -568,6 +576,9 @@ class Main:
         Weighted_Num_Realiz = []
         for i in range(len(GMPEs_Names)):
             Weighted_Num_Realiz.append(round(self.NumGMPEsRealizations * GMPEs_Weights[i])) 
+
+        if sum(Weighted_Num_Realiz) != self.NumGMPEsRealizations:
+            raise RuntimeError("Increase NumGMPEsRealizations to sample all the GMPEs")   
 
         # Sample from the total variability of ground motion taking into account both inter- and intra-event variability (for one source scenario only)
         # gmf = exp(mu + crosscorel(tau) + spatialcorrel(phi)) --> See: https://docs.openquake.org/oq-engine/advanced/latest/event_based.html#correlation-of-ground-motion-fields
@@ -850,6 +861,8 @@ class StationRecords:
         plt.show()
 
         path = os.path.join(os.getcwd(), "OUTPUT")
+        if not os.path.exists(path):
+            os.makedirs(path)
         figname = f"/Data_stationfile_{self.imt}.pdf"
         fig.savefig(path + figname, dpi=200)   
         print("DONE!") 
@@ -1285,10 +1298,10 @@ class GetDistributions:
             plt.plot(selPOI_CDF_vec_vals, 1-selPOI_CDF_vec_ecdf,'k-',label='CDF')
             plt.grid()
             plt.plot([datum,datum], [0,1], 'r-', label='Observation')
-            if self.imt == 'PGA':
-                plt.xlabel(f"{self.imt} (g)")
             if self.imt == 'PGV':
                 plt.xlabel(f"{self.imt} (cm/s)")
+            else:
+                plt.xlabel(f"{self.imt} (g)")
             plt.ylabel("CDF")
             
             plt.semilogx([selPOI_p50_vec, selPOI_p50_vec], [0,1], 'k--', label='Median')    
@@ -1399,10 +1412,10 @@ class EnsemblePlot:
         ax.legend(handles, labels, loc='upper right')
         ax.set_xticklabels(poi_indices)
         ax.set_xlabel('POI index', fontsize=16)
-        if self.imt == 'PGA':
-            ax.set_ylabel(f"{self.imt} mean (g)", fontsize=16)
         if self.imt == 'PGV':
             ax.set_ylabel(f"{self.imt} mean (cm/s)", fontsize=16)  
+        else:
+            ax.set_ylabel(f"{self.imt} mean (g)", fontsize=16)
    
         path = os.path.join(os.getcwd(), "OUTPUT/")
         fig.savefig(path + f"/Ensemble_Spread_Plot_{self.imt}.pdf", bbox_inches='tight')
