@@ -168,15 +168,15 @@ python ProbShakemaps.py --imt PGA --prob_tool GetDistributions --num_processes 8
 
 OUTPUT
 
-* `Distr_POI-{POI_idx}.pdf`: Plot of Datum-Ensemble comparison at a given POI
 * `POIs_Map.pdf`: Spatial map of the POIs
+* `Distr_POI-{POI_idx}.pdf`: Plot of Datum-Ensemble comparison at a given POI
 
 <p align="center">
-    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/POIs_Map.pdf" alt="DatumEnsemble" width="80%" height="80%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/POIs_Map.png" alt="DatumEnsemble" width="25%" height="25%">
 </p>
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="80%" height="80%">
+    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="90%" height="90%">
 </p>
 
 
@@ -193,7 +193,7 @@ OUTPUT
 * `Ensemble_Spread_Plot_{imt}.pdf`: Boxplot
 
 <p align="center">
-    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Ensemble_Spread_Plot_PGA.pdf" alt="DatumEnsemble" width="80%" height="80%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Ensemble_Spread_Plot_PGA.png" alt="DatumEnsemble" width="50%" height="50%">
 </p>
 
 **POIs SUBSET OPTION**
