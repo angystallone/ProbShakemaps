@@ -1,6 +1,6 @@
 # ProbShakemaps
 
-```ProbShakemaps``` is an open source Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemaps](https://github.com/DOI-USGS/ghsc-esi-shakemap). 
+```ProbShakemaps``` is a Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemaps](https://github.com/DOI-USGS/ghsc-esi-shakemap). It efficiently quantifies and propagates earthquake source uncertainty while accounting for model (GMMs) and aleatoric (GMMs variability) uncertainties. Designed for Urgent Computing applications.
 
 Dependencies
 -----------------------------
@@ -66,15 +66,15 @@ REQUIRED TO RUN
 
 NOTE: ```ProbShakemaps``` will rely on the files provided in the folder INPUT_FILES. To run it for different events, simply rename the old INPUT_FILES folder and populate a new one from scratch.
   
-> * TectonicRegionType: as defined in `OpenQuake` tectonic regionalisation.
-> * Magnitude_Scaling_Relationship: as required from `openquake.hazardlib.scalerel`.
-> * Rupture_aratio: rupture aspect ratio as required from `openquake.hazardlib.geo.surface.PlanarSurface.from_hypocenter`.
-> * ID_Event: `Shakemap` ID of the event.
-> * Vs30file: GMT grd Vs30 file; if not provided, default Vs30 value (760 m/s) is used.
-> * CorrelationModel: as required from `openquake.hazardlib.correlation`.
-> * CrosscorrModel: as required from `openquake.hazardlib.cross_orrelation`.
-> * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from `openquake.hazardlib.correlation`).
-> * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from `openquake.hazardlib.cross_correlation`).
+> * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
+> * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
+> * Rupture_aratio: rupture aspect ratio as required from openquake.hazardlib.geo.surface.PlanarSurface.from_hypocenter
+> * ID_Event: Shakemap ID of the event.
+> * Vs30file: GMT .grd Vs30 file; if not provided, set it to None. Default Vs30 value (760 m/s) will be used instead.
+> * CorrelationModel: as required from openquake.hazardlib.correlation.
+> * CrosscorrModel: as required from openquake.hazardlib.cross_orrelation.
+> * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
+> * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
 
 
 Usage
@@ -138,7 +138,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **PROB_TOOLS**
 
-`ProbShakemaps` comes with three different tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing and summarizing ensemble predictions at the POIs.
+`ProbShakemaps` comes with three different tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing and summarizing the ground-motion predictive distribution at the POIs.
 
 **TOOL: 'GetStatistics'**
 
@@ -178,7 +178,7 @@ OUTPUT
 
 **TOOL: 'EnsemblePlot'**
 
-Plots and summarizes the key statistical features of the distribution of predicted ground-motion values at the selected POIs with a boxplot.
+Plots and summarizes the key statistical features of the distribution of predicted ground-motion values at the selected POIs.
 
 ```bash
 python ProbShakemaps.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
@@ -194,7 +194,7 @@ OUTPUT
 
 **POIs SUBSET OPTION**
 
-When using the tools 'QueryHDF5', 'GetStatistics', 'GetDistributions' and 'EnsemblePlot', the user can also require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to):
+When using the tools 'QueryHDF5', 'GetStatistics', 'GetDistributions' and 'EnsemblePlot', the user can require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to):
 
 ```bash
 python ProbShakemaps.py [...] --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
@@ -223,4 +223,4 @@ This project is released under the [MIT License](LICENSE).
 Contact
 -----------------------------
 
-If you need support, write to [angela.stallone@ingv.it](mailto:angela.stallone@ingv.it).
+If you need support write to [angela.stallone@ingv.it](mailto:angela.stallone@ingv.it).
