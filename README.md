@@ -172,6 +172,10 @@ OUTPUT
 * `POIs_Map.pdf`: Spatial map of the POIs
 
 <p align="center">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/POIs_Map.pdf" alt="DatumEnsemble" width="80%" height="80%">
+</p>
+
+<p align="center">
     <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="80%" height="80%">
 </p>
 
@@ -189,7 +193,7 @@ OUTPUT
 * `Ensemble_Spread_Plot_{imt}.pdf`: Boxplot
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/summary_stats_forReadMe.png" alt="DatumEnsemble" width="80%" height="80%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Ensemble_Spread_Plot_PGA.pdf" alt="DatumEnsemble" width="80%" height="80%">
 </p>
 
 **POIs SUBSET OPTION**
