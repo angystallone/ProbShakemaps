@@ -171,7 +171,7 @@ def get_pois_subset(POIs_File, Lon_Event, Lat_Event, pois_selection_method, n_po
         segment_size = 360 / 4
         segment_centers = np.arange(segment_size/2, 360, segment_size)
 
-        idx_POIs, POIs_lat, POIs_lon, POIs_NAMES = [], [], [], []
+        idx_POIs, POIs_lat, POIs_lon, POIs_NAMES, azimuth_POIs = [], [], [], [], []
         found_poi_count = 0
         pois_per_segment = int(n_pois/4)
         print("pois_per_segment =", pois_per_segment)
@@ -189,6 +189,7 @@ def get_pois_subset(POIs_File, Lon_Event, Lat_Event, pois_selection_method, n_po
                         POIs_lat.append(LATs[j])
                         POIs_lon.append(LONs[j])
                         POIs_NAMES.append(f"Site_LAT:{Point(float(LONs[j]), float(LATs[j])).latitude}_LON:{Point(float(LONs[j]), float(LATs[j])).longitude}")
+                        azimuth_POIs.append(azimuths[j])
                         if len(segment_pois) == pois_per_segment:
                             break
 
@@ -201,15 +202,22 @@ def get_pois_subset(POIs_File, Lon_Event, Lat_Event, pois_selection_method, n_po
             print("Consider changing max_distance value")
             sys.exit()       
 
+        # Sort idxs, lons and lats by ascending order of the azimuths
+        comb_lists = list(zip(idx_POIs, azimuth_POIs))
+        sorted_lists = sorted(comb_lists, key=lambda x: x[1])
+        sorted_idx_POIs = [item[0] for item in sorted_lists]
+        sorted_POIs_lon = [LONs[i] for i in sorted_idx_POIs]
+        sorted_POIs_lat = [LATs[i] for i in sorted_idx_POIs]
+
         # Save POIs to file
         path = os.path.join(os.getcwd(), "OUTPUT")
         pois_file = os.path.join(path, "POIs.txt")
         with open(pois_file, "w") as f:
-            for idx, lat, lon in zip(idx_POIs, POIs_lat, POIs_lon):
+            for idx, lat, lon in zip(sorted_idx_POIs, sorted_POIs_lat, sorted_POIs_lon):
                 poi = lat, lon
                 f.write("{} {:.6f} {:.6f}\n".format(idx, *poi))  
 
-        return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES
+        return sorted_idx_POIs, sorted_POIs_lat, sorted_POIs_lon, POIs_NAMES
     
 
 def share_pois(POIs_File):
