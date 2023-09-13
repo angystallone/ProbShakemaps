@@ -1,6 +1,6 @@
-# ProbShakemaps
+# ProbShakemap
 
-```ProbShakemaps``` is a Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemaps](https://github.com/DOI-USGS/ghsc-esi-shakemap). It efficiently quantifies and propagates earthquake source uncertainty while accounting for model (GMMs) and aleatoric (GMMs variability) uncertainties. Designed for Urgent Computing applications.
+```ProbShakemap``` is a Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap). It efficiently quantifies and propagates earthquake source uncertainty while accounting for model (GMMs) and aleatoric (GMMs variability) uncertainties. Designed for Urgent Computing applications.
 
 Dependencies
 -----------------------------
@@ -14,7 +14,7 @@ Dependencies
 Command line usage
 ------------------
 <pre>
-usage: ProbShakemaps.py [-h] [--imt {PGA,PGV}] [--tool {Save_Output,StationRecords,QueryHDF5}]
+usage: ProbShakemap.py [-h] [--imt {PGA,PGV}] [--tool {Save_Output,StationRecords,QueryHDF5}]
                         [--prob_tool {GetStatistics,GetDistributions,EnsemblePlot} [{GetStatistics,GetDistributions,EnsemblePlot} ...]] [--numGMPEsRealizations NUMGMPESREALIZATIONS]
                         [--num_processes NUM_PROCESSES] [--imt_min IMT_MIN] [--imt_max IMT_MAX] [--station_file STATION_FILE] [--scenario SCENARIO] [--pois_file POIS_FILE]
                         [--deg_round DEG_ROUND] [--pois_subset] [--n_pois N_POIS] [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}]
@@ -30,7 +30,7 @@ input params:
   --tool {StationRecords,Save_Output,QueryHDF5}
                         Tool(s) to use
   --prob_tool {GetStatistics,GetDistributions,EnsemblePlot} [{GetStatistics,GetDistributions,EnsemblePlot} ...]
-                        ProbShakemaps Tool(s) to use
+                        ProbShakemap Tool(s) to use
   --numGMPEsRealizations NUMGMPESREALIZATIONS
                         Total number of GMPEs random samples
   --num_processes NUM_PROCESSES
@@ -59,12 +59,12 @@ REQUIRED TO RUN
 ------------------
 
 1) <ins>Shakemap Docker Image</ins> --> Install it from [USGS_Shakemap_Image](https://hub.docker.com/r/seddev/shakemap). Results shown here and in the article have been generated using the [INGV Shakemap Image](https://github.com/INGV/shakemap-input-eu). The folder `data` must contain a subfolder named as the ID of the event, containing the following files: `event.xml`, `stationlist.json` (optional, needed for tools 'StationRecords' and 'GetDistributions'). The Vs30 grd file must be but in the `data/shakemap_data/vs30` (optional). NOTE: The `event.xml` file must be provided in the format required by ShakeMap (do not rename it). See an example of `event.xml` file at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml). 
-2) <ins>Ensemble file with scenarios list</ins> --> The following scenario parameterization is required: magnitude, longitude, latitude, hypocenter depth (km), strike, dip, rake, fault area (L x W, *km^2*), fault length (L, *km*), slip (*m*). The file must be put in the folder INPUT_FILES/ENSEMBLE. See an example of ensemble file at [list_scenarios.txt](https://github.com/angystallone/ProbShakemaps/blob/main/INPUT_FILES/ENSEMBLE/list_scenarios_01.txt).
-3) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder INPUT_FILES. See an example of POIs file at [POIs_grid.txt](https://github.com/angystallone/ProbShakemaps/blob/main/INPUT_FILES/POIs_grid.txt).
-4) <ins>input_file.txt</ins> --> (Do not rename it!) File containing the parameters required for the probabilistic analysis. The file must be put in the folder INPUT_FILES. See an example of input file at [input_file.txt](https://github.com/angystallone/ProbShakemaps/blob/main/INPUT_FILES/input_file.txt).
+2) <ins>Ensemble file with scenarios list</ins> --> The following scenario parameterization is required: magnitude, longitude, latitude, hypocenter depth (km), strike, dip, rake, fault area (L x W, *km^2*), fault length (L, *km*), slip (*m*). The file must be put in the folder INPUT_FILES/ENSEMBLE. See an example of ensemble file at [list_scenarios.txt](https://github.com/angystallone/ProbShakemap/blob/main/INPUT_FILES/ENSEMBLE/list_scenarios_01.txt).
+3) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder INPUT_FILES. See an example of POIs file at [POIs_grid.txt](https://github.com/angystallone/ProbShakemap/blob/main/INPUT_FILES/POIs_grid.txt).
+4) <ins>input_file.txt</ins> --> (Do not rename it!) File containing the parameters required for the probabilistic analysis. The file must be put in the folder INPUT_FILES. See an example of input file at [input_file.txt](https://github.com/angystallone/ProbShakemap/blob/main/INPUT_FILES/input_file.txt).
 5) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional). The file must be put in the folder INPUT_FILES.
 
-NOTE: ```ProbShakemaps``` will rely on the files provided in the folder INPUT_FILES. To run it for different events, simply rename the old INPUT_FILES folder and populate a new one from scratch.
+NOTE: ```ProbShakemap``` will rely on the files provided in the folder INPUT_FILES. To run it for different events, simply rename the old INPUT_FILES folder and populate a new one from scratch.
   
 > * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 > * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
@@ -82,21 +82,21 @@ Usage
 
 **TOOLS**
 
-`ProbShakemaps` comes with three utility tools: 'StationRecords', 'Save_Output' and 'QueryHDF5'.
+`ProbShakemap` comes with three utility tools: 'StationRecords', 'Save_Output' and 'QueryHDF5'.
 
 **TOOL: 'StationRecords'**
 
 Inspect Shakemap .json station file.
 
 ```bash
-python ProbShakemaps.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
+python ProbShakemap.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
 ```
 OUTPUT
 
 `Data_stationfile_{imt}.pdf`: Plot data from Shakemap .json station file for the selected IMT (PGA in the example).
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/Data_stationfile_PGA.png" alt="Data_stationfile_PGA" width="60%" height="60%">
+    <img src="https://github.com/angystallone/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_PGA.png" alt="Data_stationfile_PGA" width="60%" height="60%">
 </p>
 
 
@@ -107,7 +107,7 @@ Run the probabilistic analysis and save the output to a .HDF5 file with the foll
 scenario --> POI --> GMPEs realizations.
 
 ```bash
-python ProbShakemaps.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
+python ProbShakemap.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
 ```
 
 OUTPUT
@@ -120,7 +120,7 @@ OUTPUT
 Navigate and query the .HDF5 file.
 
 ```bash
-python ProbShakemaps.py --tool QueryHDF5 --imt PGA --scenario 10 --pois_file POIs.txt
+python ProbShakemap.py --tool QueryHDF5 --imt PGA --scenario 10 --pois_file POIs.txt
 ```
 
 OUTPUT
@@ -138,7 +138,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **PROB_TOOLS**
 
-`ProbShakemaps` comes with three different tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing and summarizing the ground-motion predictive distribution at the POIs.
+`ProbShakemap` comes with three different tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing and summarizing the ground-motion predictive distribution at the POIs.
 
 **TOOL: 'GetStatistics'**
 
@@ -146,7 +146,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 * Plots the calculated statistics at all the selected POIs.
 
 ```bash
-python ProbShakemaps.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
+python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
 ```
 
 OUTPUT
@@ -155,7 +155,7 @@ OUTPUT
 * Statistics map distributions saved in the `STATISTICS` folder
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
+    <img src="https://github.com/angystallone/ProbShakemap/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
 </p>
 
 **TOOL: 'GetDistributions'**
@@ -163,7 +163,7 @@ OUTPUT
 Plots the cumulative distribution of the predicted ground-motion values and main statistics at a specific POI together with the ground-motion value recorded at the closest station.
 
 ```bash
-python ProbShakemaps.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
+python ProbShakemap.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
 ```
 
 OUTPUT
@@ -176,7 +176,7 @@ OUTPUT
 </p>
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemaps/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="90%" height="90%">
+    <img src="https://github.com/angystallone/ProbShakemap/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="90%" height="90%">
 </p>
 
 
@@ -185,7 +185,7 @@ OUTPUT
 Plots and summarizes the key statistical features of the distribution of predicted ground-motion values at the selected POIs.
 
 ```bash
-python ProbShakemaps.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
+python ProbShakemap.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
 ```
 OUTPUT
 
@@ -193,7 +193,7 @@ OUTPUT
 * `Ensemble_Spread_Plot_{imt}.pdf`: Boxplot
 
 <p align="center">
-    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Ensemble_Spread_Plot_PGA.png" alt="DatumEnsemble" width="50%" height="50%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Ensemble_Spread_Plot.png" alt="DatumEnsemble" width="50%" height="50%">
 </p>
 
 **POIs SUBSET OPTION**
@@ -201,21 +201,21 @@ OUTPUT
 When using the tools 'QueryHDF5', 'GetStatistics', 'GetDistributions' and 'EnsemblePlot', the user can require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to):
 
 ```bash
-python ProbShakemaps.py [...] --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
+python ProbShakemap.py [...] --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
 ```
 If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range ```max_distance +- max_distance/10```.
 
 **MULTIPLE TOOLS AT THE SAME TIME**
 
-```ProbShakemaps``` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,```--imt_min```, ```--imt_max```, ```--pois_subset``` etc.). For example:
+```ProbShakemap``` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,```--imt_min```, ```--imt_max```, ```--pois_subset``` etc.). For example:
 
 ```bash
-python ProbShakemaps.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
+python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
 ```
 
 **HPC**
 
-```ProbShakemaps```  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemaps/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
+```ProbShakemap```  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
 
 
 License
