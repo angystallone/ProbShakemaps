@@ -96,7 +96,7 @@ OUTPUT
 `Data_stationfile_{imt}.pdf`: Plot data from Shakemap .json station file for the selected IMT (PGA in the example).
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_PGA.png" alt="Data_stationfile_PGA" width="60%" height="60%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_PGA.png" alt="Data_stationfile_PGA" width="60%" height="60%">
 </p>
 
 
@@ -155,7 +155,7 @@ OUTPUT
 * Statistics map distributions saved in the `STATISTICS` folder
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemap/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
 </p>
 
 **TOOL: 'GetDistributions'**
@@ -176,7 +176,7 @@ OUTPUT
 </p>
 
 <p align="center">
-    <img src="https://github.com/angystallone/ProbShakemap/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="90%" height="90%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/DISTRIBUTIONS/summary_stats_forReadMe.png" alt="DatumEnsemble" width="90%" height="90%">
 </p>
 
 
