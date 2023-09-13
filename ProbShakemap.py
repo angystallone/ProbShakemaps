@@ -121,7 +121,7 @@ elif args.tool == 'QueryHDF5':
 if args.prob_tool:
 
     run_main_flag = True  # Flag variable to track if Main() has been executed
-    pois_subset_flag = False  # Flag variable to track if the pois subset has already been extracted
+    pois_subset_flag = True  # Flag variable to track if the pois subset has already been extracted
     
     for tool in args.prob_tool:
             
