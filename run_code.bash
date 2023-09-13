@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=ProbShakemaps
+#SBATCH --job-name=ProbShakemap
 #SBATCH --ntasks-per-node=8
 #SBATCH --nodes=1
 #SBATCH --mem=4G
@@ -15,13 +15,13 @@ export OMP_NUM_THREADS=1
 # Tools 
 
 # TOOL: 'StationRecords'
-python ProbShakemaps.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
+python ProbShakemap.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
 
 # TOOL: 'Save_Output'
-python ProbShakemaps.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
+python ProbShakemap.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
 
 # TOOL: 'QueryHDF5'
-python ProbShakemaps.py --imt PGA --tool QueryHDF5 --scenario 50 --pois_file POIs.txt
+python ProbShakemap.py --imt PGA --tool QueryHDF5 --scenario 50 --pois_file POIs.txt
 
 
 #######################################################
@@ -29,10 +29,10 @@ python ProbShakemaps.py --imt PGA --tool QueryHDF5 --scenario 50 --pois_file POI
 # Prob_tools
 
 # TOOL: 'GetStatistics'
-python ProbShakemaps.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
+python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
 
 # TOOL: 'GetDistributions'
-python ProbShakemaps.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
+python ProbShakemap.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
 
 # TOOL: 'EnsemblePlot'
-python ProbShakemaps.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
+python ProbShakemap.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
