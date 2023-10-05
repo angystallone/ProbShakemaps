@@ -158,7 +158,7 @@ The `npyFiles` folder contains:
 * `vector.npy`: a 2D array that stores the PGA/PGV distributions across all POIs. The array has dimensions (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`), where `num_GMPEsRealizations` represents the number of realizations per scenario, and `num_scenarios` is the total number of scenarios in the ensemble; 
 * `thresholds_distrib.npy`: a 2D array representing the probabilistic distributions of PGA/PGV across POIs. The array has dimensions (`num_pois`, 6,000), where 6,000 is the number of intervals into which the PGA/PGV range has been discretized. Probabilities within each interval are weighted by the scenario weights and then aggregated across all scenarios in the ensemble;
 * `thresholds_stat.npy`: statistics derived from the distributions in `thresholds_distrib.npy`. For each Point of Interest (POI), it includes: 'Mean' (weighted mean), 'Mean' (arithmetic mean), 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90';
-* `vector_stat.npy`: statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it includes: 'Mean' (weighted mean), 'Mean' (arithmetic mean), 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95';
+* `vector_stat.npy`: statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it includes: 'Mean' (arithmetic mean), 'Mean' (weighted mean), 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95';
 * `weight.npy`: a 2D array that stores the normalized weights across all POIs. The array dimensions match those of `vector.npy`, which are (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`).
 
 
