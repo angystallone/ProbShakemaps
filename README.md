@@ -1,6 +1,6 @@
 # ProbShakemap
 
-```ProbShakemap``` is a Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap). It efficiently quantifies and propagates earthquake source uncertainty while accounting for model (GMMs) and aleatoric (GMMs variability) uncertainties. Designed for Urgent Computing applications.
+`ProbShakemap` is a Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap). It efficiently quantifies and propagates earthquake source uncertainty while accounting for model uncertainty by accommodating multiple GMMs (if available) and the inherent variability of GMMs themselves. Designed for Urgent Computing applications.
 
 Dependencies
 -----------------------------
@@ -8,8 +8,6 @@ Dependencies
  * [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap) and [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) dependencies
  * basemap
  * seaborn
- 
- For more details, check `requirements.txt` for a list of all the installed Python packages and their versions.
  
 Command line usage
 ------------------
@@ -58,14 +56,11 @@ input params:
 REQUIRED TO RUN
 ------------------
 
-1) <ins>Shakemap Docker Image</ins> --> Install it from [USGS_Shakemap_Image](https://hub.docker.com/r/seddev/shakemap). Results shown here and in the article have been generated using the [INGV Shakemap Image](https://github.com/INGV/shakemap-input-eu). The folder `data` must contain a subfolder named as the ID of the event, containing the following files: `event.xml`, `stationlist.json` (optional, needed for tools 'StationRecords' and 'GetDistributions'). The Vs30 grd file must be but in the `data/shakemap_data/vs30` (optional). NOTE: The `event.xml` file must be provided in the format required by ShakeMap (do not rename it). See an example of `event.xml` file at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml). 
-2) <ins>Ensemble file with scenarios list</ins> --> The following scenario parameterization is required: magnitude, longitude, latitude, hypocenter depth (km), strike, dip, rake, fault area (L x W, *km^2*), fault length (L, *km*), slip (*m*). The file must be put in the folder INPUT_FILES/ENSEMBLE. See an example of ensemble file at [list_scenarios.txt](https://github.com/angystallone/ProbShakemap/blob/main/INPUT_FILES/ENSEMBLE/list_scenarios_01.txt).
-3) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder INPUT_FILES. See an example of POIs file at [POIs_grid.txt](https://github.com/angystallone/ProbShakemap/blob/main/INPUT_FILES/POIs_grid.txt).
-4) <ins>input_file.txt</ins> --> (Do not rename it!) File containing the parameters required for the probabilistic analysis. The file must be put in the folder INPUT_FILES. See an example of input file at [input_file.txt](https://github.com/angystallone/ProbShakemap/blob/main/INPUT_FILES/input_file.txt).
-5) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional). The file must be put in the folder INPUT_FILES.
+1) Ensemble of earthquake source scenarios --> run `SeisEnsMan` (see below). The ensemble file will be saved to `INPUT_FILES/ENSEMBLE`.
+2) <ins>Shakemap Docker Image</ins> --> install it from [USGS_Shakemap_Image](https://hub.docker.com/r/seddev/shakemap). Results shown here and in the article have been generated using the [INGV Shakemap Image](https://github.com/INGV/shakemap-input-eu). The folder `data` must contain a subfolder named as the ID of the event, containing the following `Shakemap` files: `event.xml` and `stationlist.json` (do not rename these files). The Vs30 .grd file must be but in the `data/shakemap_data/vs30` (optional). NOTE: The `event.xml` file must be provided in the format required by `Shakemap`, see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml). 
+4) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
+5) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it).
 
-NOTE: ```ProbShakemap``` will rely on the files provided in the folder INPUT_FILES. To run it for different events, simply rename the old INPUT_FILES folder and populate a new one from scratch.
-  
 > * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 > * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
 > * Rupture_aratio: rupture aspect ratio as required from openquake.hazardlib.geo.surface.PlanarSurface.from_hypocenter
@@ -76,17 +71,53 @@ NOTE: ```ProbShakemap``` will rely on the files provided in the folder INPUT_FIL
 > * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
 > * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
 
+6) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
 
-Usage
+
+USAGE
 ------------------
 
-**TOOLS**
+**SeisEnsMan**
 
-`ProbShakemap` comes with three utility tools: 'StationRecords', 'Save_Output' and 'QueryHDF5'.
+Run `SeisEnsMan` before `ProbShakemap` to generate an ensemble of N earthquake source scenarios that are compatible with the event under consideration, given the past seismicity in the region. To install all Python libraries required by `SeisEnsMan`, first create and activate the environment SeisEnsMan:
 
-**TOOL: 'StationRecords'**
+```bash
+python -m venv SeisEnsMan
+```
 
-Inspect Shakemap .json station file.
+On macOS and Linux:
+```bash
+source SeisEnsMan/bin/activate
+```
+
+On Windows:
+```bash
+SeisEnsMan\Scripts\activate
+```
+
+Then use the file `requirements.txt` provided in the folder `SeisEnsMan` to install the required libraries:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+`SeisEnsMan` utilizes the information from the `event.xml` file to automatically download the event's .quakeml file and generate the `event_stat.json` file, which contains all the necessary parameters for creating the ensemble of scenarios. You can find examples of event-specific .json files in the `SeisEnsManV2/IO/EarlyEst` folder. To run `SeisEnsMan`, use the following command:
+
+```bash
+./line_call.sh
+```
+
+Ensure that you set the `--nb_scen` parameter to the desired number of scenarios in the ensemble.
+
+Before running `ProbShakemap`, make sure you have deactivated the environment SeisEnsMan. Next, run a Docker container using the Shakemap image.
+
+**ProbShakemap**
+
+`ProbShakemap` comes with three utility tools: `StationRecords`, `Save_Output` and `QueryHDF5`. 
+
+**TOOL: StationRecords**
+
+Inspect `Shakemap` .json station file.
 
 ```bash
 python ProbShakemap.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
@@ -100,11 +131,11 @@ OUTPUT
 </p>
 
 
-**TOOL: 'Save_Output'**
+**TOOL: Save_Output**
 
 Run the probabilistic analysis and save the output to a .HDF5 file with the following hierarchical structure: 
 
-scenario --> POI --> GMPEs realizations.
+scenario --> POI --> GMPEs realizations
 
 ```bash
 python ProbShakemap.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
@@ -115,7 +146,7 @@ OUTPUT
 `SIZE_{num_scenarios}_ENSEMBLE_{IMT}.hdf5`
 
 
-**TOOL: 'QueryHDF5'**
+**TOOL: QueryHDF5**
 
 Navigate and query the .HDF5 file.
 
@@ -138,11 +169,11 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **PROB_TOOLS**
 
-`ProbShakemap` comes with three different tools to generate Probabilistic Shakemaps: 'GetStatistics', 'GetDistributions' and 'EnsemblePlot'. Probabilistic Shakemaps represent different products for visualizing and summarizing the ground-motion predictive distribution at the POIs.
+`ProbShakemap` comes with three different tools to generate Probabilistic Shakemaps: `GetStatistics`, `GetDistributions` and `EnsemblePlot`. Probabilistic Shakemaps represent different products for visualizing and summarizing the ground-motion predictive distribution at the POIs.
 
-**TOOL: 'GetStatistics'**
+**TOOL: GetStatistics**
 
-* Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If the user does not provide a file with scenarios weights, the scenarios are considered equally probable.
+* Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If you do not provide a file with scenarios weights, the scenarios are considered equally probable.
 * Plots the calculated statistics at all the selected POIs.
 
 ```bash
@@ -166,7 +197,7 @@ The `npyFiles` folder contains:
     <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
 </p>
 
-**TOOL: 'GetDistributions'**
+**TOOL: GetDistributions**
 
 Plots the cumulative distribution of the predicted ground-motion values and main statistics at a specific POI together with the ground-motion value recorded at the closest station.
 
@@ -188,13 +219,14 @@ OUTPUT
 </p>
 
 
-**TOOL: 'EnsemblePlot'**
+**TOOL: EnsemblePlot**
 
 Plots and summarizes the key statistical features of the distribution of predicted ground-motion values at the selected POIs.
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
 ```
+
 OUTPUT
 
 * `POIs_Map.pdf`: Spatial map of the POIs
@@ -206,16 +238,16 @@ OUTPUT
 
 **POIs SUBSET OPTION**
 
-When using the tools 'QueryHDF5', 'GetStatistics', 'GetDistributions' and 'EnsemblePlot', the user can require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to):
+When using the tools `QueryHDF5`, `GetStatistics`, `GetDistributions` and `EnsemblePlot`, you can require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to):
 
 ```bash
 python ProbShakemap.py [...] --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
 ```
-If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range ```max_distance +- max_distance/10```.
+If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in the range `max_distance +- max_distance/10`.
 
 **MULTIPLE TOOLS AT THE SAME TIME**
 
-```ProbShakemap``` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,```--imt_min```, ```--imt_max```, ```--pois_subset``` etc.). For example:
+`ProbShakemap` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,`--imt_min`, `--imt_max`, `--pois_subset` etc.). For example:
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
@@ -223,7 +255,7 @@ python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num
 
 **HPC**
 
-```ProbShakemap```  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
+`ProbShakemap`  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
 
 
 License
