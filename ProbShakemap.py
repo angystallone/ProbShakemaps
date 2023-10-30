@@ -4,8 +4,15 @@ import numpy
 import argparse
 import time
 import shutil
+import logging
+from datetime import datetime
 
 start_time = time.time()
+
+def setup_logging(log_dir):
+    current_time = datetime.now().strftime("%Y%m%d%H%M%S")
+    log_file = os.path.join(log_dir, f"setup_{current_time}.log")
+    logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def run_main():
     
@@ -19,7 +26,6 @@ def run_main():
     prob_output = ProbCalc.run_prob_analysis()
 
     return prob_output
-
 
 # Define command-line arguments
 parser = argparse.ArgumentParser(description='ProbShakemap Toolbox')
@@ -44,6 +50,12 @@ input_params.add_argument('--fileScenariosWeights', default="", help='File with 
 # Parse command-line arguments
 args = parser.parse_args()
 
+# Set up logging
+outfile_dir = os.path.join(os.getcwd(), "OUTPUT/LOGS/")
+if not os.path.exists(outfile_dir):
+            os.makedirs(outfile_dir)
+setup_logging(outfile_dir)
+
 # Get params
 params = tools.get_params()
 Lat_Event = float(params["Lat_Event"])
@@ -64,6 +76,13 @@ if args.tool == 'StationRecords':
     if args.station_file is None:
         raise TypeError("Station .json file from shakemap not available")
 
+    logging.info(f"Tool: {args.tool}")
+    logging.info(f"Intensity Measure: {args.imt}")
+    logging.info(f"Min {args.imt}: {args.imt_min}")
+    logging.info(f"Max {args.imt}: {args.imt_max}")
+    logging.info(f"Deg round: {args.deg_round}")
+    logging.info(f"Station file: {args.station_file}")
+
     StationRecords = tools.StationRecords(args.imt, args.imt_min, args.imt_max, 
                                             args.deg_round, args.station_file)
     StationRecords.plot()
@@ -82,6 +101,10 @@ elif args.tool == 'Save_Output':
     if args.numGMPEsRealizations is None:
         raise TypeError("Missing required argument 'numGMPEsRealizations'")
         
+    logging.info(f"Tool: {args.tool}") 
+    logging.info(f"Intensity Measure: {args.imt}")
+    logging.info(f"POIs File: {args.pois_file}") 
+    logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")   
     
     prob_output = run_main()
 
@@ -107,6 +130,17 @@ elif args.tool == 'QueryHDF5':
     else:
         if args.scenario is None:
             raise TypeError("Missing required argument 'scenario'")
+
+    logging.info(f"Tool: {args.tool}")
+    logging.info(f"Intensity Measure: {args.imt}")
+    logging.info(f"POIs File: {args.pois_file}")
+    logging.info(f"POIs Subset: {args.pois_subset}")
+    if args.pois_subset:
+        logging.info(f"Scenario: {args.scenario}")
+        logging.info(f"Num POIs in the Subset: {args.n_pois}")
+        logging.info(f"Max Distance: {args.max_distance}")
+        logging.info(f"POIs Selection Methos: {args.pois_selection_method}")
+
 
     QueryHDF5 = tools.QueryHDF5(args.scenario, args.pois_file,
                                 args.pois_subset, args.n_pois, args.max_distance, 
@@ -136,6 +170,20 @@ if args.prob_tool:
             if args.pois_selection_method == 'azimuth_uniform':
                 if args.n_pois % 4 > 0:
                     raise TypeError("Select a number of POIs divisible by 4")
+                
+            logging.info(f"Prob Tool: {tool}")  
+            logging.info(f"Intensity Measure: {args.imt}")
+            logging.info(f"Min {args.imt}: {args.imt_min}")
+            logging.info(f"Max {args.imt}: {args.imt_max}")  
+            logging.info(f"POIs File: {args.pois_file}")
+            logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")  
+            logging.info(f"File Scenarios Weights: {args.fileScenariosWeights}")  
+            logging.info(f"Deg round: {args.deg_round}")
+            logging.info(f"POIs Subset: {args.pois_subset}")
+            if args.pois_subset:
+                logging.info(f"Num POIs in the Subset: {args.n_pois}")
+                logging.info(f"Max Distance: {args.max_distance}")
+                logging.info(f"POIs Selection Methos: {args.pois_selection_method}")
 
             if run_main_flag:
 
@@ -145,7 +193,7 @@ if args.prob_tool:
                     raise TypeError("Missing required argument 'pois_file'")
                 if args.numGMPEsRealizations is None:
                     raise TypeError("Missing required argument 'numGMPEsRealizations'")
-                    
+
                 prob_output = run_main()
                 SiteGmf = prob_output["SiteGmf"]
 
@@ -174,6 +222,21 @@ if args.prob_tool:
             if args.pois_selection_method == 'azimuth_uniform':
                 if args.n_pois % 4 > 0:
                     raise TypeError("Select a number of POIs divisible by 4")
+                
+            logging.info(f"Prob Tool: {tool}")  
+            logging.info(f"Intensity Measure: {args.imt}")
+            logging.info(f"Min {args.imt}: {args.imt_min}")
+            logging.info(f"Max {args.imt}: {args.imt_max}")  
+            logging.info(f"POIs File: {args.pois_file}")
+            logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")  
+            logging.info(f"Station file: {args.station_file}")
+            logging.info(f"File Scenarios Weights: {args.fileScenariosWeights}")  
+            logging.info(f"Deg round: {args.deg_round}")
+            logging.info(f"POIs Subset: {args.pois_subset}")
+            if args.pois_subset:
+                logging.info(f"Num POIs in the Subset: {args.n_pois}")
+                logging.info(f"Max Distance: {args.max_distance}")
+                logging.info(f"POIs Selection Methos: {args.pois_selection_method}")    
 
             if run_main_flag:
 
@@ -204,6 +267,18 @@ if args.prob_tool:
             if args.pois_selection_method == 'azimuth_uniform':
                 if args.n_pois % 4 > 0:
                     raise TypeError("Select a number of POIs divisible by 4")
+                
+            logging.info(f"Prob Tool: {tool}")  
+            logging.info(f"Intensity Measure: {args.imt}")
+            logging.info(f"POIs File: {args.pois_file}")
+            logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")  
+            logging.info(f"File Scenarios Weights: {args.fileScenariosWeights}")  
+            logging.info(f"Deg round: {args.deg_round}")
+            logging.info(f"POIs Subset: {args.pois_subset}")
+            if args.pois_subset:
+                logging.info(f"Num POIs in the Subset: {args.n_pois}")
+                logging.info(f"Max Distance: {args.max_distance}")
+                logging.info(f"POIs Selection Methos: {args.pois_selection_method}")   
 
             if run_main_flag:
 

@@ -244,15 +244,6 @@ def share_pois(POIs_File):
     return idx_POIs, POIs_lat, POIs_lon, POIs_NAMES, n_pois      
 
 
-# def get_poi_dict(POIs_NAMES):
-
-#     # Initialize a dictionary to map each POI to its index 
-#     poi_idx_dict = {poi: idx for idx, poi in enumerate(POIs_NAMES)}
-#     poi_indices = [poi_idx_dict[poi] + 1 for poi in poi_idx_dict]
-
-#     return poi_idx_dict, poi_indices
-
-
 def pois_map(POIs_lat, POIs_lon, Lat_Event, Lon_Event, deg_round, path):
 
     poi_indices = [idx + 1 for idx in range(len(POIs_lat))]
@@ -585,9 +576,18 @@ class Main:
         for i in range(len(GMPEs_Names)):
             Weighted_Num_Realiz.append(round(self.NumGMPEsRealizations * GMPEs_Weights[i])) 
 
-        if sum(Weighted_Num_Realiz) != self.NumGMPEsRealizations:
+        if 0 in Weighted_Num_Realiz:
             raise RuntimeError("Increase NumGMPEsRealizations to sample all the GMPEs")   
 
+        remaining_samples = self.NumGMPEsRealizations - sum(Weighted_Num_Realiz)
+        if remaining_samples > 0:
+            # Assign remaining sample to the GMPE with the highest weight 
+            max_weight_index = GMPEs_Weights.index(max(GMPEs_Weights))
+            for i in range(len(GMPEs_Names)):
+                if i == max_weight_index:
+                    Weighted_Num_Realiz[i] += 1
+        total_assigned = sum(Weighted_Num_Realiz)
+ 
         # Sample from the total variability of ground motion taking into account both inter- and intra-event variability (for one source scenario only)
         # gmf = exp(mu + crosscorel(tau) + spatialcorrel(phi)) --> See: https://docs.openquake.org/oq-engine/advanced/latest/event_based.html#correlation-of-ground-motion-fields
 
@@ -596,6 +596,7 @@ class Main:
         listscenarios_dir = os.getcwd() + "/INPUT_FILES/ENSEMBLE/"
         scenarios_file = [name for name in os.listdir(listscenarios_dir) if name != ".DS_Store"]
         f = open(os.path.join(listscenarios_dir, scenarios_file[0]), 'r')
+        print("List of scenarios: ", scenarios_file[0])
 
         Ensemble_Scenarios = []
         for k, line in enumerate(f):
@@ -1421,9 +1422,9 @@ class EnsemblePlot:
         ax.set_xticklabels(poi_indices)
         ax.set_xlabel('POI index', fontsize=16)
         if self.imt == 'PGV':
-            ax.set_ylabel(f"{self.imt} mean (cm/s)", fontsize=16)  
+            ax.set_ylabel(f"{self.imt} (cm/s)", fontsize=16)  
         else:
-            ax.set_ylabel(f"{self.imt} mean (g)", fontsize=16)
+            ax.set_ylabel(f"{self.imt} (g)", fontsize=16)
    
         path = os.path.join(os.getcwd(), "OUTPUT/")
         fig.savefig(path + f"/Ensemble_Spread_Plot_{self.imt}.pdf", bbox_inches='tight')
