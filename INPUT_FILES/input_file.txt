@@ -11,12 +11,6 @@ truncation_level: 3
 
 ******* NOTES **********
 
-IMPORTANT!
-
-The ensemble file must be put in the folder INPUT_FILES/ENSEMBLE
-
-
-MORE ON INPUT PARAMETERS
 
 * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
