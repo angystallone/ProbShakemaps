@@ -183,7 +183,7 @@ python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --p
 OUTPUT
 
 * npy files with statistics saved in the `npyFiles` folder
-* Statistics map distributions saved in the `STATISTICS` folder
+* map distributions of statistics in `vector_stat.npy` saved in the `STATISTICS` folder
 
 The `npyFiles` folder contains:
 * `vector.npy`: a 2D array that stores the PGA/PGV distributions across all POIs. The array has dimensions (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`), where `num_GMPEsRealizations` represents the number of realizations per scenario, and `num_scenarios` is the total number of scenarios in the ensemble; 
