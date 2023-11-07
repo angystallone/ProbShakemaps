@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    26.376,
+                    38.848,
+                    19.53
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2017-06-12T12:26",
+                "eventId": 99999999,
+                "mag": 6.508542,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "lesbo",
+                "mag_percentiles": {
+                    "p16": "6.243013",
+                    "p50": "6.508542",
+                    "p84": "6.694069"
+                },
+                "cov_matrix": {
+                    "XX": "2.62722",
+                    "XY": "0.810987",
+                    "XZ": "-0.956208",
+                    "YY": "1.82686",
+                    "YZ": "-0.46714",
+                    "ZZ": "10.0085"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

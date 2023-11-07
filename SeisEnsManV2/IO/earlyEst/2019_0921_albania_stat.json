@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    19.475,
+                    41.317,
+                    9.96
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2019-09-21T14:02",
+                "eventId": 99999999,
+                "mag": 5.813572,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "albania",
+                "mag_percentiles": {
+                    "p16": "5.649062",
+                    "p50": "5.813572",
+                    "p84": "5.985821"
+                },
+                "cov_matrix": {
+                    "XX": "2.38288",
+                    "XY": "0.117707",
+                    "XZ": "-0.116072",
+                    "YY": "2.78942",
+                    "YZ": "0.0646598",
+                    "ZZ": "6.6388"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

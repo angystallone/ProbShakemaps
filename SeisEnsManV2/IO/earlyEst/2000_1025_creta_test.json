@@ -1,0 +1,23 @@
+{
+'type': 'FeatureCollection',
+'features': [{
+      'geometry': {
+          'type': 'Point',
+          'coordinates': [26.2705, 34.882, 20.0]},
+      'type': 'Feature',
+      'properties': {
+          'originId': 66666666,
+          'version': 100,
+          'time': '2000-10-25T22:54:18.404000',
+          'eventId': 22222222,
+          'mag': 6.20,
+          'geojson_creationTime': '2020-05-16T16:30:58',
+          'magAuthor': 'early-est_ee1.1.9#ee',
+          'magType': 'Mwp',
+          'type': 'earthquake',
+          'place': 'Zante',
+          'mag_percentiles' : {'p16' : '5.899999', 'p50': '6.1', 'p84' : '6.3'},
+          'cov_matrix' : {'XX' : '1.70816', 'XY' : '0.270061', 'XZ' : '0.0988157', 'YY' : '2.74951', 'YZ' : '0.48637', 'ZZ' : '8.04068'},
+          'author': 'early-est_ee1.1.9#ee'}
+          }]
+}

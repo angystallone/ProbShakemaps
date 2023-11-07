@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    13.151,
+                    42.869,
+                    10.06
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2016-10-30T06:38",
+                "eventId": 99999999,
+                "mag": 6.71782,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "norcia",
+                "mag_percentiles": {
+                    "p16": "6.541006",
+                    "p50": "6.717820",
+                    "p84": "6.839470"
+                },
+                "cov_matrix": {
+                    "XX": "1.40619",
+                    "XY": "0.410143",
+                    "XZ": "-0.00509674",
+                    "YY": "1.87361",
+                    "YZ": "-0.0361472",
+                    "ZZ": "0.232912"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

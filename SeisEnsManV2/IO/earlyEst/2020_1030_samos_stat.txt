@@ -1,0 +1,11 @@
+2020-10-30_Samos Version 5  (email FabB 04/01/2021)
+------------------
+Statistics: ExpectX 37.839 Y 26.829 Z 9.8
+Loc(lat lon z): 37.839 26.829 9.8
+CovXX 13.9478 XY 4.8435 XZ 0.2781 YY 18.1122 YZ 0.1786 ZZ 10.2529
+EllAz1 
+EllVol
+OriginUncertainty (68%)  
+ph_assoc ph_used: 
+wp Percentiles(16, 50, 84): 6.827 6.978 7.153
+

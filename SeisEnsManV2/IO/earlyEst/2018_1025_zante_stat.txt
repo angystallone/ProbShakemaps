@@ -1,0 +1,11 @@
+2018_1025_2254_zante_bh Version 5   -- 2018-10-25T22:52 540 -- 2018.10.25-22:54:50.69 Ionian_Sea -- Linee 1
+------------------
+Statistics: ExpectX 20.6072 Y 37.4977 Z 13.7099
+Loc(lat lon z): 37.496 20.608 9.96
+CovXX 1.70816 XY 0.270061 XZ 0.0988157 YY 2.74951 YZ 0.48637 ZZ 8.04068
+EllAz1 283.783 Dip1 -0.178216 Len1 2.40771 Az2 193.799 Dip2 5.37368 Len2 3.12628 Len3 5.343078e+00
+EllVol 2
+OriginUncertainty (68%)  latUnc 3.11541  lonUnc 2.45557  minHorUnc 1.94352  maxHorUnc 2.54468  azMaxHorUnc 13.7073  vertUnc 5.32763
+ph_assoc ph_used: 60 59
+wp Percentiles(16, 50, 84): 6.712228 6.846322 7.055409
+

@@ -1,0 +1,38 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [26.829, 37.839, 9.8]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2020-10-30T00:00",
+                "eventId": 99999999,
+                "mag": 6.978,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "samos",
+                "mag_percentiles": {
+                    "p16": "6.827",
+                    "p50": "6.978",
+                    "p84": "7.153"
+                },
+                "cov_matrix": {
+                    "XX": "13.9478",
+                    "XY": "4.8435",
+                    "XZ": "0.2781",
+                    "YY": "18.1122",
+                    "YZ": "0.1786",
+                    "ZZ": "10.2529"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

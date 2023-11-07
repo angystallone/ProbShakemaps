@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    20.511,
+                    38.804,
+                    19.73
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2015-11-17T07:09",
+                "eventId": 99999999,
+                "mag": 6.528838,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "lefkada",
+                "mag_percentiles": {
+                    "p16": "6.363333",
+                    "p50": "6.528838",
+                    "p84": "6.719873"
+                },
+                "cov_matrix": {
+                    "XX": "2.39196",
+                    "XY": "0.52256",
+                    "XZ": "-0.183727",
+                    "YY": "4.69261",
+                    "YZ": "0.34835",
+                    "ZZ": "3.44598"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

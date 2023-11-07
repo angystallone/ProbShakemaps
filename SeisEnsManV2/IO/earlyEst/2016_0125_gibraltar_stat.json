@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -3.731,
+                    35.448,
+                    9.77
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2016-01-25T04:19",
+                "eventId": 99999999,
+                "mag": 6.391477,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "gibraltar",
+                "mag_percentiles": {
+                    "p16": "6.281442",
+                    "p50": "6.391477",
+                    "p84": "6.538221"
+                },
+                "cov_matrix": {
+                    "XX": "9.31463",
+                    "XY": "-2.04433",
+                    "XZ": "-0.388018",
+                    "YY": "21.6767",
+                    "YZ": "0.888481",
+                    "ZZ": "11.9178"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

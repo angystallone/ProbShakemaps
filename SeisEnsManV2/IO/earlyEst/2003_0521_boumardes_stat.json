@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    3.652,
+                    36.868,
+                    9.77
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2003-05-21T18:43",
+                "eventId": 99999999,
+                "mag": 6.86538,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "boumardes",
+                "mag_percentiles": {
+                    "p16": "6.752705",
+                    "p50": "6.865380",
+                    "p84": "6.984961"
+                },
+                "cov_matrix": {
+                    "XX": "12.5101",
+                    "XY": "1.22462",
+                    "XZ": "-0.500232",
+                    "YY": "16.8474",
+                    "YZ": "0.598099",
+                    "ZZ": "11.0985"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}

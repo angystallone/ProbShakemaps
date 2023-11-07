@@ -1,0 +1,42 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    27.444,
+                    36.918,
+                    9.77
+                ]
+            },
+            "type": "Features",
+            "properties": {
+                "originId": 99999999,
+                "version": 100,
+                "time": "2017-07-20T22:29",
+                "eventId": 99999999,
+                "mag": 6.861638,
+                "geojson_creationTime": "",
+                "magAuthor": "early-est_ee1.1.9#ee",
+                "magType": "Mwp",
+                "type": "earthquake",
+                "place": "kos-bodrum",
+                "mag_percentiles": {
+                    "p16": "6.697485",
+                    "p50": "6.861638",
+                    "p84": "7.066429"
+                },
+                "cov_matrix": {
+                    "XX": "11.19",
+                    "XY": "2.2969",
+                    "XZ": "-0.819565",
+                    "YY": "17.4746",
+                    "YZ": "0.427332",
+                    "ZZ": "11.7283"
+                },
+                "author": "early-est_ee1.1.9#ee"
+            }
+        }
+    ]
+}
