@@ -1002,9 +1002,10 @@ class GetStatistics:
 
     def calc_statistics(self):
 
-        thresholds_stat_names = ['Mean','Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90']
-        thresholds_stat = np.zeros([len(thresholds_stat_names), self.n_pois])
-        vector_stat = np.zeros([len(thresholds_stat_names) + 2, self.n_pois])
+        thresholds_stat_names = ['Weighted Mean','Arithmetic Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90']
+        thresholds_stat = {name: [0] * self.n_pois for name in thresholds_stat_names}
+        vector_stat_names = ['Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5', 'Percentile 95']
+        vector_stat = {name: [0] * self.n_pois for name in vector_stat_names}
         thresholds_n = 6000
         thresholds_lim = np.linspace(0, 2, thresholds_n + 1)
         thresholds_cent = 0.5 * (thresholds_lim[0 : len(thresholds_lim) - 1] + thresholds_lim[1 : len(thresholds_lim)])
@@ -1060,24 +1061,24 @@ class GetStatistics:
                     itemindex_first = itemindex[0][0]
                 pga_samp[j]= thresholds_cent[itemindex_first]
 
-            thresholds_stat[0][jp] = np.sum(np.multiply(tmp, thresholds_cent))
-            thresholds_stat[1][jp] = np.mean(pga_samp)
-            thresholds_stat[2][jp] = np.median(pga_samp)
-            thresholds_stat[3][jp] = np.percentile(pga_samp,10)
-            thresholds_stat[4][jp] = np.percentile(pga_samp,20)
-            thresholds_stat[5][jp] = np.percentile(pga_samp,80)
-            thresholds_stat[6][jp] = np.percentile(pga_samp,90)
+            thresholds_stat['Weighted Mean'][jp] = np.sum(np.multiply(tmp, thresholds_cent))
+            thresholds_stat['Arithmetic Mean'][jp] = np.mean(pga_samp)
+            thresholds_stat['Median'][jp] = np.median(pga_samp)
+            thresholds_stat['Percentile 10'][jp] = np.percentile(pga_samp,10)
+            thresholds_stat['Percentile 20'][jp] = np.percentile(pga_samp,20)
+            thresholds_stat['Percentile 80'][jp] = np.percentile(pga_samp,80)
+            thresholds_stat['Percentile 90'][jp] = np.percentile(pga_samp,90)
             
-            vector_stat[0][jp] = np.mean(vector[jp])
-            vector_stat[1][jp] = np.sum(vector[jp] * weight[jp])/np.sum(weight[jp])
-            vector_stat[2][jp] = weighted_percentile(vector[jp],weight[jp],0.5)
-            vector_stat[3][jp] = weighted_percentile(vector[jp],weight[jp],0.1)
-            vector_stat[4][jp] = weighted_percentile(vector[jp],weight[jp],0.2)
-            vector_stat[5][jp] = weighted_percentile(vector[jp],weight[jp],0.8)
-            vector_stat[6][jp] = weighted_percentile(vector[jp],weight[jp],0.9)
-            # 5th-95th percentiles for boxplot later 
-            vector_stat[7][jp] = weighted_percentile(vector[jp],weight[jp],0.05)
-            vector_stat[8][jp] = weighted_percentile(vector[jp],weight[jp],0.95) 
+            vector_stat['Mean'][jp] = np.sum(vector[jp] * weight[jp])/np.sum(weight[jp])
+            #vector_stat['Arithmetic Mean'][jp] = np.mean(vector[jp])
+            vector_stat['Median'][jp] = weighted_percentile(vector[jp],weight[jp],0.5)
+            vector_stat['Percentile 10'][jp] = weighted_percentile(vector[jp],weight[jp],0.1)
+            vector_stat['Percentile 20'][jp] = weighted_percentile(vector[jp],weight[jp],0.2)
+            vector_stat['Percentile 80'][jp] = weighted_percentile(vector[jp],weight[jp],0.8)
+            vector_stat['Percentile 90'][jp] = weighted_percentile(vector[jp],weight[jp],0.9)
+            # Add 5th-95th percentiles for boxplot later 
+            vector_stat['Percentile 5'][jp] = weighted_percentile(vector[jp],weight[jp],0.05)
+            vector_stat['Percentile 95'][jp] = weighted_percentile(vector[jp],weight[jp],0.95) 
 
         stats = {} 
         stats['thresholds_stat'] = thresholds_stat
@@ -1087,13 +1088,13 @@ class GetStatistics:
         stats['weight'] = weight
         stats['thresholds_cent'] = thresholds_cent
 
-        return stats, thresholds_stat_names
+        return stats, thresholds_stat_names, vector_stat_names
     
     def save_statistics(self):
 
         print("********* SAVING STATISTICS *******")
 
-        stats, _ = GetStatistics.calc_statistics(self)
+        stats, _, _ = GetStatistics.calc_statistics(self)
         thresholds_stat = stats['thresholds_stat'] 
         thresholds_distrib = stats['thresholds_distrib'] 
         vector_stat = stats['vector_stat'] 
@@ -1117,7 +1118,7 @@ class GetStatistics:
         if not os.path.exists(path):
             os.makedirs(path)
 
-        stats, stat_names = GetStatistics.calc_statistics(self)
+        stats, _, vector_stat_names = GetStatistics.calc_statistics(self)
         vector_stat = stats['vector_stat'] 
 
         dim_point = 10
@@ -1128,7 +1129,7 @@ class GetStatistics:
         ylim_min = np.min(np.floor(self.POIs_lat/self.deg_round) * self.deg_round)
         ylim_max = np.max(np.ceil(self.POIs_lat/self.deg_round) * self.deg_round)
 
-        for j,name in enumerate(stat_names):
+        for _,name in enumerate(vector_stat_names):
 
             fig = plt.figure(figsize=(9, 6))
 
@@ -1148,7 +1149,7 @@ class GetStatistics:
 
             x, y = m(self.POIs_lon, self.POIs_lat)
             
-            tmp = vector_stat[j]
+            tmp = vector_stat[name]
             sc = m.scatter(x, y, c=np.log10(tmp), vmin=np.log10(self.imt_min), vmax=np.log10(self.imt_max), s=dim_point, cmap = cm)
             plt.title(name)
             cbar = plt.colorbar(sc)
@@ -1219,7 +1220,7 @@ class GetDistributions:
 
         print("********* GETTING DISTRIBUTIONS *******")
 
-        stats, _ = GetStatistics.calc_statistics(self)
+        stats, _, _ = GetStatistics.calc_statistics(self)
         vector_stat = stats['vector_stat'] 
         vector = stats['vector'] 
         weight = stats['weight'] 
@@ -1237,10 +1238,10 @@ class GetDistributions:
             stat, vals = estimator(sample, weights=weights)
             selPOI_CDF_vec_ecdf = stat
             selPOI_CDF_vec_vals = vals
-            
-            selPOI_p50_vec = vector_stat[2][iPoi]
-            selPOI_p10_vec = vector_stat[3][iPoi]
-            selPOI_p90_vec = vector_stat[6][iPoi]
+
+            selPOI_p50_vec = vector_stat['Median'][iPoi]
+            selPOI_p10_vec = vector_stat['Percentile 10'][iPoi]
+            selPOI_p90_vec = vector_stat['Percentile 90'][iPoi]
 
             # SELECT THE CLOSEST RECORDING TO THE SELECTED POI
   
@@ -1397,14 +1398,15 @@ class EnsemblePlot:
 
         poi_indices = [idx + 1 for idx in range(self.n_pois)]
 
-        stats, _ = GetStatistics.calc_statistics(self)
+        stats, _, _ = GetStatistics.calc_statistics(self)
         vector_stat = stats['vector_stat'] 
 
         fig, ax = plt.subplots()
         for iPoi in range(self.n_pois):
-            median = vector_stat[2][iPoi]
-            selPOI_p5_vec = vector_stat[7][iPoi]
-            selPOI_p95_vec = vector_stat[8][iPoi]
+
+            median = vector_stat['Median'][iPoi]
+            selPOI_p5_vec = vector_stat['Percentile 5'][iPoi]
+            selPOI_p95_vec = vector_stat['Percentile 95'][iPoi]
                         
             whiskerprops = dict(color='black')
             flierprops = dict(marker='o', markerfacecolor='red', markersize=8, linestyle='none')
