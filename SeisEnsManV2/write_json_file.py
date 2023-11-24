@@ -6,6 +6,7 @@ import json
 import numpy as np
 from obspy import read_events
 from obspy.core.utcdatetime import UTCDateTime
+import shutil
 
 # LOAD INFO FROM event.xml FILE
 
@@ -58,7 +59,6 @@ except requests.exceptions.RequestException as e:
 
 catalog = read_events(eventquakeml)
 
-# Extract the region name
 if catalog:
     event = catalog[0]  
     description = event.event_descriptions[0]  
@@ -101,12 +101,35 @@ p50 = mag
 p16 = mag - 0.3
 p84 = mag + 0.3
 
-# WRITE event_stat.json FILE
-
+# BACKUP of 'event_stat.json'
 file_dir = os.path.join(os.getcwd(), 'input')
 eventstatjson = 'event_stat.json'
 eventstatjson_fullpath = os.path.join(file_dir, eventstatjson)
+print("eventstatjson_fullpath: ", eventstatjson_fullpath)
 
+timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+if os.path.exists(eventstatjson_fullpath):
+    backup_folder = os.path.join(os.path.join(os.getcwd()), 'BACKUP/EVENT_STAT')
+    if not os.path.exists(backup_folder):
+        os.makedirs(backup_folder)
+
+    backup_filename = f"event_stat_{timestamp}.json"
+    backup_full_path = os.path.join(backup_folder, backup_filename)
+
+    shutil.copy(eventstatjson_fullpath, backup_full_path)
+
+# BACKUP OF 'output' FOLDER
+start_folder = os.path.join(os.getcwd(), 'output')
+timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+backup_folder = os.path.join(os.path.join(os.getcwd()), f"BACKUP/LIST_SCENARIOS_{timestamp}")
+if not os.path.exists(backup_folder):
+    os.makedirs(backup_folder)
+for item in os.listdir(start_folder):
+    item_path = os.path.join(start_folder, item)
+    if os.path.isfile(item_path) and item != ".DS_Store":
+        shutil.move(item_path, backup_folder)
+
+# WRITE event_stat.json FILE
 with open(eventstatjson_fullpath, 'r') as file:
     data = json.load(file)
 
@@ -126,7 +149,7 @@ data['features'][0]['properties']['cov_matrix']['YY'] = yy
 data['features'][0]['properties']['cov_matrix']['YZ'] = yz
 data['features'][0]['properties']['cov_matrix']['ZZ'] = zz
 
-with open(eventstatjson, 'w') as file:
+with open(eventstatjson_fullpath, 'w') as file:
     json.dump(data, file, indent=4) 
 
 print(f'############# Stats in {eventstatjson} updated #############')
