@@ -170,7 +170,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **PROB_TOOLS**
 
-`ProbShakemap` comes with three different tools: `GetStatistics`, `GetDistributions` and `EnsemblePlot`. The outputs are Probabilistic Shakemaps helping the user to explore the ground-motion predictive distributions at a set of POIs.
+`ProbShakemap` comes with three 'prob tools': `GetStatistics`, `GetDistributions` and `EnsemblePlot`. The outputs are Probabilistic Shakemaps helping the user to explore the ground-motion predictive distributions at a set of POIs.
 
 **TOOL: GetStatistics**
 
