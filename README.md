@@ -1,6 +1,6 @@
 # ProbShakemap
 
-`ProbShakemap` is a Python toolbox that generates Probabilistic Shakemaps, an evolved version of traditional [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap). It efficiently quantifies and propagates earthquake source uncertainty while accounting for model uncertainty by accommodating multiple GMMs (if available) and the inherent variability of GMMs themselves. Designed for Urgent Computing applications.
+`ProbShakemap` is a Python toolbox that generates Probabilistic Shakemaps. It efficiently quantifies and propagates earthquake source uncertainty while accounting for model uncertainty by accommodating multiple GMMs (if available) and the inherent variability of GMMs themselves. Designed for Urgent Computing applications.
 
 Dependencies
 -----------------------------
@@ -57,7 +57,7 @@ REQUIRED TO RUN
 ------------------
 
 1) Ensemble of earthquake source scenarios --> run `SeisEnsMan` (see below). The ensemble file will be saved to `INPUT_FILES/ENSEMBLE`.
-2) <ins>Shakemap Docker Image</ins> --> install it from [USGS_Shakemap_Image](https://hub.docker.com/r/seddev/shakemap). Results shown here and in the article have been generated using the [INGV Shakemap Image](https://github.com/INGV/shakemap-input-eu). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
+2) <ins>Shakemap Docker Image</ins> --> install it from [INGV_Shakemap_Image TO DO](). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
 3) The Vs30 .grd file (optional) must be but in the `data/shakemap_data/vs30`. A global Vs30 is already provided (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020).
 4) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
 5) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it).
