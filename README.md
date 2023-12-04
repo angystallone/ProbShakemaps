@@ -1,6 +1,6 @@
 # ProbShakemap
 
-`ProbShakemap` is a Python toolbox that generates Probabilistic Shakemaps. It efficiently quantifies and propagates earthquake source uncertainty while accounting for model uncertainty by accommodating multiple GMMs (if available) and the inherent variability of GMMs themselves. Designed for Urgent Computing applications.
+`ProbShakemap` is a Python toolbox that efficiently quantifies and propagates ensemble-based source uncertainty while accounting for model uncertainty by accommodating multiple GMMs (if available) and the inherent variability of GMMs themselves. It comes with a set of tools helping the user to visualize and explore the predictive distribution of ground motion at each point of interest. Designed for Urgent Computing applications.
 
 Dependencies
 -----------------------------
@@ -57,7 +57,7 @@ REQUIRED TO RUN
 ------------------
 
 1) Ensemble of earthquake source scenarios --> run `SeisEnsMan` (see below). The ensemble file will be saved to `INPUT_FILES/ENSEMBLE`.
-2) <ins>Shakemap Docker Image</ins> --> install it from [INGV_Shakemap_Image TO DO](). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
+2) <ins>Shakemap Docker Image</ins> --> results shown here and in the article have been generated using the [INGV_Shakemap_Image TO DO](). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
 3) The Vs30 .grd file (optional) must be but in the `data/shakemap_data/vs30`. A global Vs30 is already provided (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020).
 4) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
 5) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it).
@@ -80,7 +80,7 @@ USAGE
 
 **SeisEnsMan**
 
-Run `SeisEnsMan` before `ProbShakemap` to generate an ensemble of N earthquake source scenarios that are compatible with the event under consideration, given the past seismicity in the region. To install all Python libraries required by `SeisEnsMan`, first create and activate the environment SeisEnsMan:
+Run `SeisEnsMan` before `ProbShakemap` to generate an ensemble of N earthquake source scenarios that are compatible with the event under consideration, given the past seismicity in the region and the known faults. To install all Python libraries required by `SeisEnsMan`, first create and activate the environment SeisEnsMan:
 
 ```bash
 python -m venv SeisEnsMan
@@ -170,11 +170,11 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **PROB_TOOLS**
 
-`ProbShakemap` comes with three different tools to generate Probabilistic Shakemaps: `GetStatistics`, `GetDistributions` and `EnsemblePlot`. Probabilistic Shakemaps represent different products for visualizing and summarizing the ground-motion predictive distribution at the POIs.
+`ProbShakemap` comes with three different tools to explore the ground-motion predictive distributions at a set of POIs: `GetStatistics`, `GetDistributions` and `EnsemblePlot`. 
 
 **TOOL: GetStatistics**
 
-* Calculates and save statistics ('Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'). If you do not provide a file with scenarios weights, the scenarios are considered equally probable.
+* Calculates and save statistics of the predictive distribution. If you do not provide a file with scenarios weights, the scenarios are considered equally probable.
 * Plots the calculated statistics at all the selected POIs.
 
 ```bash
