@@ -96,7 +96,7 @@ On Windows:
 SeisEnsMan\Scripts\activate
 ```
 
-Then use the file `requirements.txt` provided in the folder `SeisEnsMan` to install the required libraries:
+Then use the file `requirements.txt` provided in the folder `SeisEnsManV2` to install the required libraries:
 
 ```bash
 python -m pip install -r requirements.txt
