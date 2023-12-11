@@ -102,7 +102,7 @@ Then use the file `requirements.txt` provided in the folder `SeisEnsManV2` to in
 python3.9 -m pip install -r requirements.txt
 ```
 
-`SeisEnsMan` utilizes the information from the `event.xml` file to automatically download the event's .quakeml file and generate the `event_stat.json` file, which contains all the necessary parameters for creating the ensemble of scenarios. You can find examples of event-specific .json files in the `SeisEnsManV2/IO/EarlyEst` folder. To run `SeisEnsMan`, use the following command:
+`SeisEnsMan` utilizes the information from the `event.xml` file to automatically download the event's .quakeml file and generate the `event_stat.json` file, which contains all the necessary parameters for creating the ensemble of scenarios. You can find examples of event-specific .json files in the `SeisEnsManV2/IO/EarlyEst` folder. To run `SeisEnsMan`, move to `SeisEnsManV2` folder and use the following command:
 
 ```bash
 ./line_call.sh
