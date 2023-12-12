@@ -83,7 +83,7 @@ Clone the INGV shakemap4 GitHub repository:
 git clone https://github.com/INGV/shakemap
 ```
 
-The folder `shakemap4/data/shakemap_profiles/world/data` includes the event-id folder (Norcia earthquake example: `8863681/current`) which contains the file `event.xml`. You need to build an `event-id/current` folder for each new event, and to provide the related `event.xml` file. You could start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap4/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020). The user can substitue it with a custom one.
+The folder `shakemap4/data/shakemap_profiles/world/data` includes the event-id folder (Norcia earthquake example: `8863681/current`) which contains the file `event.xml`. You need to build an `event-id/current` folder for each new event, and to provide the related `event.xml` file. You could start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap4/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020), but you can substitue it with a custom one.
 
 Build shakemap4 Docker Image:
 
