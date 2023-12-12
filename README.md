@@ -5,9 +5,8 @@
 Dependencies
 -----------------------------
 
- * [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap) and [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) dependencies
- * basemap
- * seaborn
+ * [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap)
+ * [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) 
  
 Command line usage
 ------------------
@@ -56,10 +55,9 @@ input params:
 REQUIRED TO RUN
 ------------------
 
-1) <ins>Shakemap Docker Image</ins> --> results shown here and in the article have been generated using the [INGV_Shakemap_Image](https://github.com/INGV/shakemap). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
-2) The Vs30 .grd file (optional) must be but in the `data/shakemap_data/vs30`. A global Vs30 is already provided (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020).
-3) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
-4) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it).
+1) <ins>INGV shakemap4 Docker Image</ins> --> [INGV shakemap4 Docker Image](https://github.com/INGV/shakemap) is the INGV configuration of the [USGS Shakemap Docker Image](https://github.com/DOI-USGS/ghsc-esi-shakemap) incorporating specific GMMs and Vs30 map for the Italian region. Except for that, the two products are equivalent. See below for instructions on how to install the INGV shakemap4 Docker Image.
+2) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
+3) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it). Be sure to set ID_Event equal to the event_id folder name (see Setting ProbShakemap section below).
 
 > * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 > * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
@@ -71,15 +69,47 @@ REQUIRED TO RUN
 > * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
 > * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
 
-5) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
+4) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
 
 
 USAGE
 ------------------
 
+**Setting ProbShakemap**
+
+Clone the INGV shakemap4 GitHub repository:
+
+```bash
+git clone https://github.com/INGV/shakemap
+```
+
+The folder `shakemap4/data/shakemap_profiles/world/data` includes the event-id folder (Norcia earthquake example: `8863681/current`) which contains the file `event.xml`. You need to build an `event-id/current` folder for each new event, and to provide the related `event.xml` file. You could start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap4/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020). The user can substitue it with a custom one.
+
+Build shakemap4 Docker Image:
+
+```bash
+cd shakemap4
+DOCKER_BUILDKIT=1 docker build --no-cache --build-arg ENV_UID=$(id -u) --build-arg ENV_GID=$(id -g) --tag shakemap4 .
+```
+
+Download `ProbShakemap`:
+
+```bash
+git clone https://github.com/INGV/ProbShakemap.git
+```
+
+Move the folder content to 'world' folder:
+
+```bash
+mv ./ProbShakemap/* ./data/shakemap_profiles/world/
+rm -rf ./ProbShakemap
+```
+
 **SeisEnsMan**
 
-Run `SeisEnsMan` before `ProbShakemap` to generate an ensemble of N earthquake source scenarios that are compatible with the event under consideration, given the past seismicity in the region and the known faults. To install all Python libraries required by `SeisEnsMan`, first create and activate the environment SeisEnsMan:
+`SeisEnsMan` generates an ensemble of N earthquake source scenarios that are compatible with the event under consideration, given the past seismicity in the region and the known faults. It utilizes the information from the `event.xml` file to automatically download the event's QUAKEML file and generate the `event_stat.json` file. The latter contains all the necessary parameters for creating the ensemble of scenarios. Examples of event-specific JSON files can be found in the `SeisEnsManV2/IO/EarlyEst` folder. 
+
+To install all Python libraries required by `SeisEnsMan`, first create and activate the environment SeisEnsMan:
 
 ```bash
 python -m venv SeisEnsMan
@@ -101,22 +131,40 @@ Then use the file `requirements.txt` provided in the folder `SeisEnsManV2` to in
 python3.9 -m pip install -r requirements.txt
 ```
 
-`SeisEnsMan` utilizes the information from the `event.xml` file to automatically download the event's .quakeml file and generate the `event_stat.json` file, which contains all the necessary parameters for creating the ensemble of scenarios. You can find examples of event-specific .json files in the `SeisEnsManV2/IO/EarlyEst` folder. To run `SeisEnsMan`, move to `SeisEnsManV2` folder and use the following command:
+Move to `SeisEnsManV2` directory in `path/to/shakemap4/data/shakemap_profiles/world/` and use the following command (ensure that you set the `--nb_scen` parameter to the desired number of scenarios in the ensemble): 
 
 ```bash
 ./line_call.sh
 ```
 
-Ensure that you set the `--nb_scen` parameter to the desired number of scenarios in the ensemble.
+After being generated, the ensemble of scenarios is saved in `INPUT_FILES/ENSEMBLE` folder, ready to be queried by `ProbShakemap`. 
+Before running `ProbShakemap`, make sure to deactivate the environment SeisEnsMan:
 
-Before running `ProbShakemap`, make sure you have deactivated the environment SeisEnsMan. Next, run a Docker container using the Shakemap image.
+```bash
+deactivate
+```
 
 **ProbShakemap**
+
+Start Docker and run Docker container from shakemap4 image and set the user profile to 'world':
+
+```bash
+cd shakemap4/
+docker run -it --rm -t -p 8888:8888 -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
+sm_profile -l
+```
+
+Move to 'world' folder:
+
+```bash
+cd /home/shake/shakemap_profiles/world
+```
 
 `ProbShakemap` comes with three utility tools: `StationRecords`, `Save_Output` and `QueryHDF5`. 
 
 **TOOL: StationRecords**
 
+Put the `Shakemap` file `stationlist.json` in the `event-id/current` folder. 
 Inspect `Shakemap` .json station file.
 
 ```bash
@@ -200,6 +248,8 @@ The `npyFiles` folder contains:
 **TOOL: GetDistributions**
 
 Plots the cumulative distribution of the predicted ground-motion values and main statistics at a specific POI together with the ground-motion value recorded at the closest station.
+
+Put the `Shakemap` file `stationlist.json` in the `event-id/current` folder. 
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
