@@ -56,11 +56,10 @@ input params:
 REQUIRED TO RUN
 ------------------
 
-1) Ensemble of earthquake source scenarios --> run `SeisEnsMan` (see below). The ensemble file will be saved to `INPUT_FILES/ENSEMBLE`.
-2) <ins>Shakemap Docker Image</ins> --> results shown here and in the article have been generated using the [INGV_Shakemap_Image](https://github.com/INGV/shakemap). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
-3) The Vs30 .grd file (optional) must be but in the `data/shakemap_data/vs30`. A global Vs30 is already provided (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020).
-4) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
-5) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it).
+1) <ins>Shakemap Docker Image</ins> --> results shown here and in the article have been generated using the [INGV_Shakemap_Image](https://github.com/INGV/shakemap). The folder `data` must contain a subfolder named as the ID of the event, containing the file `event.xml`, which must be provided in the format required by `Shakemap` (see an example at [event.xml](https://github.com/INGV/ProbShakemap/blob/main/event.xml)). The `Shakemap` file `stationlist.json` is required only to run the tool `StationRecords` and the prob tool `GetDistributions`.
+2) The Vs30 .grd file (optional) must be but in the `data/shakemap_data/vs30`. A global Vs30 is already provided (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020).
+3) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
+4) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it).
 
 > * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 > * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
@@ -72,7 +71,7 @@ REQUIRED TO RUN
 > * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
 > * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
 
-6) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
+5) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
 
 
 USAGE
