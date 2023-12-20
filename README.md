@@ -6,7 +6,8 @@ Dependencies
 -----------------------------
 
  * [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap)
- * [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md) 
+ * [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md)
+ * [Docker](https://www.docker.com/)
  
 Command line usage
 ------------------
