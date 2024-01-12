@@ -56,7 +56,7 @@ input params:
 REQUIRED TO RUN
 ------------------
 
-1) <ins>INGV shakemap4 Docker Image</ins> --> [INGV shakemap4 Docker Image](https://github.com/INGV/shakemap) is the INGV configuration of the [USGS Shakemap Docker Image](https://github.com/DOI-USGS/ghsc-esi-shakemap) incorporating specific GMMs and Vs30 map for the Italian region. Except for that, the two products are equivalent. See below for instructions on how to install the INGV shakemap4 Docker Image.
+1) <ins>INGV shakemap Docker Image</ins> --> [INGV shakemap Docker Image](https://github.com/INGV/shakemap) is the INGV configuration of the [USGS Shakemap Docker Image](https://github.com/DOI-USGS/ghsc-esi-shakemap) incorporating specific GMMs and Vs30 map for the Italian region. Except for that, the two products are equivalent. See below for instructions on how to install the INGV shakemap Docker Image.
 2) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
 3) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it). Be sure to set ID_Event equal to the event_id folder name (see Setting ProbShakemap section below).
 
@@ -73,24 +73,31 @@ REQUIRED TO RUN
 4) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
 
 
-USAGE
+INSTALLATION
 ------------------
 
-**Setting ProbShakemap**
+**Set ProbShakemap**
 
-Clone the INGV shakemap4 GitHub repository:
+Clone the INGV shakemap GitHub repository into your working directory:
 
 ```bash
 git clone https://github.com/INGV/shakemap
 ```
 
-The folder `shakemap4/data/shakemap_profiles/world/data` includes the event-id folder (Norcia earthquake example: `8863681/current`) which contains the file `event.xml`. You need to build an `event-id/current` folder for each new event, and to provide the related `event.xml` file. You could start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap4/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), with a specific Vs30 model for italy (Michelini et al., 2020), but you can substitue it with a custom one.
+The folder `shakemap/data/shakemap_profiles/world/data` includes, as an example, the event-id folder for Norcia earthquake (`8863681/current`). The event-id folder contains the file `event.xml`, with basic information about the event. 
+You need to create an `event-id/current` folder for each new event and provide the corresponding `event.xml` file. The latter can be built easily: start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), which includes a specific Vs30 model for italy (Michelini et al., 2020). You can use a custom .grd Vs30 file.
 
-Build shakemap4 Docker Image:
+Start Docker (download it from [here](https://www.docker.com/)) and build the shakemap Docker Image:
 
 ```bash
-cd shakemap4
+cd shakemap
 DOCKER_BUILDKIT=1 docker build --no-cache --build-arg ENV_UID=$(id -u) --build-arg ENV_GID=$(id -g) --tag shakemap4 .
+```
+
+Test if you can enter into the container:
+
+```bash
+docker run -it --rm -t -p 8888:8888 -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
 ```
 
 Download `ProbShakemap`:
@@ -98,15 +105,15 @@ Download `ProbShakemap`:
 ```bash
 git clone https://github.com/INGV/ProbShakemap.git
 ```
-
-Move the folder content to 'world' folder:
+The `ProbShakemap` folder contains the input file, the list of scenarios and the POIs file related to the Amatrice example.
+Move the folder content to the 'world' folder. This is needed to preserve all the files after shutting down Docker.
 
 ```bash
 mv ./ProbShakemap/* ./data/shakemap_profiles/world/
 rm -rf ./ProbShakemap
 ```
 
-**SeisEnsMan**
+**Install SeisEnsMan**
 
 `SeisEnsMan` generates an ensemble of N earthquake source scenarios that are compatible with the event under consideration, given the past seismicity in the region and the known faults. It utilizes the information from the `event.xml` file to automatically download the event's QUAKEML file and generate the `event_stat.json` file. The latter contains all the necessary parameters for creating the ensemble of scenarios. Examples of event-specific JSON files can be found in the `SeisEnsManV2/IO/EarlyEst` folder. 
 
@@ -129,35 +136,35 @@ SeisEnsMan\Scripts\activate
 Then use the file `requirements.txt` provided in the folder `SeisEnsManV2` to install the required libraries:
 
 ```bash
-python3.9 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
-Move to `SeisEnsManV2` directory in `path/to/shakemap4/data/shakemap_profiles/world/` and use the following command (ensure that you set the `--nb_scen` parameter to the desired number of scenarios in the ensemble): 
+HOW TO RUN
+------------------
+
+**Generate the scenarios ensemble**
+
+Create the `event-id/current` folder for the event and provide the corresponding `event.xml` file. This will be used by `SeisEnsMan` to download the event QUAKEML file needed for generating the ensemble of event-compatible scenarios.
+Move to `SeisEnsManV2` directory in `path/to/shakemap/data/shakemap_profiles/world/` and use the following command (ensure that you set the `--nb_scen` parameter to the desired number of scenarios in the ensemble): 
 
 ```bash
 ./line_call.sh
 ```
 
-After being generated, the ensemble of scenarios is saved in `INPUT_FILES/ENSEMBLE` folder, ready to be queried by `ProbShakemap`. 
+After being generated, the ensemble of scenarios is saved in `INPUT_FILES/ENSEMBLE` folder, ready to be queried by `ProbShakemap`. Any other old files has been moved to the `BACKUP` folder.
 Before running `ProbShakemap`, make sure to deactivate the environment SeisEnsMan:
 
 ```bash
 deactivate
 ```
 
-**ProbShakemap**
+**Run ProbShakemap**
 
-Start Docker and run Docker container from shakemap4 image and set the user profile to 'world':
+Start Docker and move to your working directory, then run:
 
 ```bash
-cd shakemap4/
 docker run -it --rm -t -p 8888:8888 -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
 sm_profile -l
-```
-
-Move to 'world' folder:
-
-```bash
 cd /home/shake/shakemap_profiles/world
 ```
 
