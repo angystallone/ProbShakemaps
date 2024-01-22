@@ -495,7 +495,7 @@ class Main:
         for key, _ in config_model_select['gmpe_sets'].items():
             GMPE_Set.append(config_model_select['gmpe_sets'][key]['gmpes'][0])
 
-        print("GMPE Sets selected for this earthquake = ", GMPE_Set)
+        print("GMPEs Set available = ", GMPE_Set)
 
         # config files
         conf_filename = self.install_path + '/config/gmpe_sets.conf'
@@ -505,27 +505,53 @@ class Main:
         config_modules = ConfigObj(conf_filename)
 
         # Get GMPEs acronyms
+        GMPEs_Weights = {}
         for key, _ in config_gmpe_sets['gmpe_sets'].items():
             if key in GMPE_Set:
                 if not isinstance(config_gmpe_sets['gmpe_sets'][key]['gmpes'], list):
-                    GMPEs_Acronym, GMPEs_Weights = [], []
-                    GMPEs_Acronym.append(config_gmpe_sets['gmpe_sets'][key]['gmpes'])
-                    GMPEs_Weights.append(float(config_gmpe_sets['gmpe_sets'][key]['weights']))
+                    acronym = str(config_gmpe_sets['gmpe_sets'][key]['gmpes'])
+                    weight = float(config_gmpe_sets['gmpe_sets'][key]['weights'])
+                    GMPEs_Weights[acronym] = weight
                 else:
-                    GMPEs_Acronym = config_gmpe_sets['gmpe_sets'][key]['gmpes']
-                    GMPEs_Weights = [float(i) for i in config_gmpe_sets['gmpe_sets'][key]['weights'] ]
-                    
+                    for acronym, weight in zip(config_gmpe_sets['gmpe_sets'][key]['gmpes'],
+                                               config_gmpe_sets['gmpe_sets'][key]['weights']):
+                        GMPEs_Weights[str(acronym)] = float(weight)
+
         # Get GMPEs from the acronyms
-        GMPEs_Names = []
+        GMPEs_Names = {}
         for key, item in config_modules['gmpe_modules'].items():  
-            if key in GMPEs_Acronym:
+            if key in GMPEs_Weights.keys():
                 print(f"Importing {item[0]}")
-                GMPEs_Names.append(item[0])
+                GMPEs_Names[key] = item[0]
 
         # Convert gmpes names into GSIM instances
-        gmpes = []
-        for elem in GMPEs_Names:
-            gmpes.append(valid.gsim(elem))  # OQ equivalent of getattr
+        gmpes = {}
+        for acronym, elem in GMPEs_Names.items():
+            gmpes[acronym] = valid.gsim(elem)  # OQ equivalent of getattr
+
+        # Filter GMPEs with the selected IMT available
+        gmpes_ok = {}
+        for acronym, gmpe in gmpes.items():
+            list_of_imts = ', '.join([imt.__name__ for imt in gmpe.DEFINED_FOR_INTENSITY_MEASURE_TYPES])   
+            if self.imt in ['PGA', 'PGV']:
+                if self.imt in list_of_imts:
+                    gmpes_ok[acronym] = gmpe
+            else:
+                # SA
+                if self.imt[:2] in list_of_imts:
+                    gmpes_ok[acronym] = gmpe
+
+        gmpes = gmpes_ok
+
+        if len(gmpes) != 0:
+            print("GMPEs with the requested IMT available = ", [item for _, item in gmpes.items()])     
+        else:
+            print('No GMPEs with the requested IMT available')   
+            sys.exit() 
+
+        # Update GMPEs_Names and GMPEs_Weights
+        GMPEs_Weights = {acronym: weight for acronym, weight in GMPEs_Weights.items() if acronym in gmpes.keys()}
+        GMPEs_Names = {acronym: name for acronym, name in GMPEs_Names.items() if acronym in gmpes.keys()}   
 
         if vs30file is not None:
 
@@ -564,7 +590,8 @@ class Main:
         param = dict(imtls=imtls)   
 
         # Instantiate a ContextMaker object (Note: independent from source and sites!)
-        context_maker = ContextMaker(tectonicRegionType, gmpes, param)
+        gmpes_list = list(gmpes.values())
+        context_maker = ContextMaker(tectonicRegionType, gmpes_list, param)
 
         print("********* SAMPLING UNCERTAINTY *******")
 
@@ -573,19 +600,23 @@ class Main:
 
         # This is needed to sample proportionally to the weight of the GMPEs
         Weighted_Num_Realiz = []
-        for i in range(len(GMPEs_Names)):
-            Weighted_Num_Realiz.append(round(self.NumGMPEsRealizations * GMPEs_Weights[i])) 
+        for acronym, weight in GMPEs_Weights.items():
+            Weighted_Num_Realiz.append(round(self.NumGMPEsRealizations * GMPEs_Weights[acronym])) 
 
         if 0 in Weighted_Num_Realiz:
             raise RuntimeError("Increase NumGMPEsRealizations to sample all the GMPEs")   
 
-        remaining_samples = self.NumGMPEsRealizations - sum(Weighted_Num_Realiz)
-        if remaining_samples > 0:
-            # Assign remaining sample to the GMPE with the highest weight 
-            max_weight_index = GMPEs_Weights.index(max(GMPEs_Weights))
-            for i in range(len(GMPEs_Names)):
-                if i == max_weight_index:
-                    Weighted_Num_Realiz[i] += 1
+        current_total_samples = sum(Weighted_Num_Realiz)
+        
+        if current_total_samples < self.NumGMPEsRealizations:
+            remaining_samples = self.NumGMPEsRealizations - current_total_samples
+            while remaining_samples > 0:
+                # Assign remaining samples to the GMPE with the highest weight 
+                GMPEs_Weights_list = list(GMPEs_Weights.values())
+                max_weight_index = GMPEs_Weights_list.index(max(GMPEs_Weights_list))
+                Weighted_Num_Realiz[max_weight_index] += 1
+                remaining_samples -= 1
+
         total_assigned = sum(Weighted_Num_Realiz)
  
         # Sample from the total variability of ground motion taking into account both inter- and intra-event variability (for one source scenario only)
@@ -641,7 +672,7 @@ class Main:
                     result = Main.process_scenario(scen=scenario, Ensemble_Scenarios=Ensemble_Scenarios, 
                                             msr=msr, rupture_aratio=rupture_aratio, tectonicRegionType=tectonicRegionType,
                                             context_maker=context_maker, Site_Collection=Site_Collection, 
-                                            correlation_model=correlation_model, crosscorr_model=crosscorr_model, gmpes=gmpes, 
+                                            correlation_model=correlation_model, crosscorr_model=crosscorr_model, gmpes=gmpes_list, 
                                             Weighted_Num_Realiz=Weighted_Num_Realiz)
                     chunk_results.append(result)
 
@@ -657,7 +688,7 @@ class Main:
             GMPEsRealizationsForProbShakeMap_AllGMPEs[k] = gmf
 
             # PRINTING INFO
-            for g, gmpe in enumerate(gmpes):    
+            for g, gmpe in enumerate(gmpes_list):    
                 if k == 0:
                     # Print this for one source scenario only
                     print("IMT: ", self.imt, "-- GMPE", gmpe, "is sampled", Weighted_Num_Realiz[g], "times over a total of", self.NumGMPEsRealizations, "times")
@@ -700,7 +731,7 @@ class Main:
             # Loop over sites
             for s in range(len(sites)):
                 SiteGmfGMPE = []
-                for g in range(len(gmpes)): 
+                for g in range(len(gmpes_list)): 
                     # IMT index = 0 as we consider only 1 IMT at a time
                     SiteGmfGMPE.append(GMPEsRealizationsForProbShakeMap_AllGMPEs[i_scen][g][0][s])
 
@@ -805,7 +836,13 @@ class StationRecords:
             data = json.load(json_file)
             data_imt = np.zeros((len(data['features'][:])))
             for i in range(len(data['features'][:])):
-                tmp = data['features'][i]['properties'][key]
+                if self.imt in ['PGA', 'PGV']:
+                    tmp = data['features'][i]['properties'][key]
+                else:
+                    list_predictions = data['features'][i]['properties']['predictions']
+                    for pred in list_predictions:
+                        if pred['name'] == key:
+                            tmp = pred['value']
                 if tmp != 'null':
                     if self.imt == 'PGV':
                         data_imt[i] = tmp 
@@ -863,7 +900,7 @@ class StationRecords:
         x, y = m(data_lon, data_lat)
 
         plt.title(f"{self.stationfile}, {self.imt}")
-        sc = m.scatter(x, y, c=np.log10(data_imt), vmin=np.log10(self.imt_min), vmax=np.log10(self.imt_max), s=5, edgecolors='black', linewidths=0.2, cmap = cm)
+        sc = m.scatter(x, y, c=np.log10(data_imt), vmin=np.log10(self.imt_min), vmax=np.log10(self.imt_max), s=20, edgecolors='black', linewidths=0.2, cmap = cm)
         cbar = plt.colorbar(sc)
         cbar.set_label(f"log10({self.imt})")
 
@@ -1004,7 +1041,8 @@ class GetStatistics:
 
         thresholds_stat_names = ['Weighted Mean','Arithmetic Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90']
         thresholds_stat = {name: [0] * self.n_pois for name in thresholds_stat_names}
-        vector_stat_names = ['Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5', 'Percentile 95']
+        vector_stat_names = ['Mean','Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5', 'Percentile 95',
+                             'Percentile 2_5', 'Percentile 97_5']
         vector_stat = {name: [0] * self.n_pois for name in vector_stat_names}
         thresholds_n = 6000
         thresholds_lim = np.linspace(0, 2, thresholds_n + 1)
@@ -1052,22 +1090,22 @@ class GetStatistics:
             tmp = thresholds_distrib[jp]
             tmpcum = np.cumsum(tmp)
             th = np.random.rand(nsamp)
-            pga_samp = np.zeros(nsamp)
+            imt_samp = np.zeros(nsamp)
             for j,samp in enumerate(th): 
                 itemindex = np.where(tmpcum > samp)
                 if np.size(itemindex) == 0:
                     itemindex_first = 0
                 else:
                     itemindex_first = itemindex[0][0]
-                pga_samp[j]= thresholds_cent[itemindex_first]
+                imt_samp[j]= thresholds_cent[itemindex_first]
 
             thresholds_stat['Weighted Mean'][jp] = np.sum(np.multiply(tmp, thresholds_cent))
-            thresholds_stat['Arithmetic Mean'][jp] = np.mean(pga_samp)
-            thresholds_stat['Median'][jp] = np.median(pga_samp)
-            thresholds_stat['Percentile 10'][jp] = np.percentile(pga_samp,10)
-            thresholds_stat['Percentile 20'][jp] = np.percentile(pga_samp,20)
-            thresholds_stat['Percentile 80'][jp] = np.percentile(pga_samp,80)
-            thresholds_stat['Percentile 90'][jp] = np.percentile(pga_samp,90)
+            thresholds_stat['Arithmetic Mean'][jp] = np.mean(imt_samp)
+            thresholds_stat['Median'][jp] = np.median(imt_samp)
+            thresholds_stat['Percentile 10'][jp] = np.percentile(imt_samp,10)
+            thresholds_stat['Percentile 20'][jp] = np.percentile(imt_samp,20)
+            thresholds_stat['Percentile 80'][jp] = np.percentile(imt_samp,80)
+            thresholds_stat['Percentile 90'][jp] = np.percentile(imt_samp,90)
             
             vector_stat['Mean'][jp] = np.sum(vector[jp] * weight[jp])/np.sum(weight[jp])
             #vector_stat['Arithmetic Mean'][jp] = np.mean(vector[jp])
@@ -1076,7 +1114,9 @@ class GetStatistics:
             vector_stat['Percentile 20'][jp] = weighted_percentile(vector[jp],weight[jp],0.2)
             vector_stat['Percentile 80'][jp] = weighted_percentile(vector[jp],weight[jp],0.8)
             vector_stat['Percentile 90'][jp] = weighted_percentile(vector[jp],weight[jp],0.9)
-            # Add 5th-95th percentiles for boxplot later 
+            # To not plot later
+            vector_stat['Percentile 2_5'][jp] = weighted_percentile(vector[jp],weight[jp],0.025)
+            vector_stat['Percentile 97_5'][jp] = weighted_percentile(vector[jp],weight[jp],0.975)
             vector_stat['Percentile 5'][jp] = weighted_percentile(vector[jp],weight[jp],0.05)
             vector_stat['Percentile 95'][jp] = weighted_percentile(vector[jp],weight[jp],0.95) 
 
@@ -1131,33 +1171,35 @@ class GetStatistics:
 
         for _,name in enumerate(vector_stat_names):
 
-            fig = plt.figure(figsize=(9, 6))
+            if name not in ['Percentile 2_5', 'Percentile 97_5', 'Percentile 5', 'Percentile 95']:
 
-            latitudes = np.arange(-90, 91, 2)
-            longitudes = np.arange(-180, 181, 2)
+                fig = plt.figure(figsize=(9, 6))
 
-            cm = plt.cm.get_cmap('turbo')
+                latitudes = np.arange(-90, 91, 2)
+                longitudes = np.arange(-180, 181, 2)
 
-            m = Basemap(projection='merc',llcrnrlat=ylim_min,urcrnrlat=ylim_max,\
-                    llcrnrlon=xlim_min,urcrnrlon=xlim_max,lat_ts=20,resolution='i')
-            m.drawcoastlines()
+                cm = plt.cm.get_cmap('turbo')
 
-            m.drawparallels(latitudes, labels=[1,0,0,0], fontsize=8, linewidth=0.5, color='gray', dashes=[1, 2])
-            m.drawmeridians(longitudes, labels=[0,0,0,1], fontsize=8, linewidth=0.5, color='gray', dashes=[1, 2])
+                m = Basemap(projection='merc',llcrnrlat=ylim_min,urcrnrlat=ylim_max,\
+                        llcrnrlon=xlim_min,urcrnrlon=xlim_max,lat_ts=20,resolution='i')
+                m.drawcoastlines()
 
-            m.drawmapboundary(linewidth=2, color='black', fill_color='white')
+                m.drawparallels(latitudes, labels=[1,0,0,0], fontsize=8, linewidth=0.5, color='gray', dashes=[1, 2])
+                m.drawmeridians(longitudes, labels=[0,0,0,1], fontsize=8, linewidth=0.5, color='gray', dashes=[1, 2])
 
-            x, y = m(self.POIs_lon, self.POIs_lat)
-            
-            tmp = vector_stat[name]
-            sc = m.scatter(x, y, c=np.log10(tmp), vmin=np.log10(self.imt_min), vmax=np.log10(self.imt_max), s=dim_point, cmap = cm)
-            plt.title(name)
-            cbar = plt.colorbar(sc)
-            cbar.set_label(f"log10({self.imt})")
-            plt.show()
+                m.drawmapboundary(linewidth=2, color='black', fill_color='white')
 
-            figname = path + '/' + 'Stat_' + name.strip() + '.pdf'
-            fig.savefig(figname, dpi = 200)
+                x, y = m(self.POIs_lon, self.POIs_lat)
+                
+                tmp = vector_stat[name]
+                sc = m.scatter(x, y, c=np.log10(tmp), vmin=np.log10(self.imt_min), vmax=np.log10(self.imt_max), s=dim_point, cmap = cm)
+                plt.title(name)
+                cbar = plt.colorbar(sc)
+                cbar.set_label(f"log10({self.imt})")
+                plt.show()
+
+                figname = path + '/' + 'Stat_' + name.strip() + '.pdf'
+                fig.savefig(figname, dpi = 200)
         print(f"***** Figures saved in {path} *****")
 
 

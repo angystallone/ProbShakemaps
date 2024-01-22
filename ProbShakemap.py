@@ -30,7 +30,7 @@ def run_main():
 # Define command-line arguments
 parser = argparse.ArgumentParser(description='ProbShakemap Toolbox')
 input_params = parser.add_argument_group('input params')
-input_params.add_argument('--imt', choices=['PGA', 'PGV'], help='Intensity measure type (IMT)')
+input_params.add_argument('--imt', choices=['PGA', 'PGV', 'SA(0.3)', 'SA(1.0)', 'SA(3.0)'], help='Intensity measure type (IMT)')
 input_params.add_argument('--tool', choices=['StationRecords', 'Save_Output', 'QueryHDF5'], help='Tool(s) to use')
 input_params.add_argument('--prob_tool', choices=['GetStatistics', 'GetDistributions', 'EnsemblePlot'], nargs='+', help='ProbShakemap Tool(s) to use')
 input_params.add_argument('--numGMPEsRealizations', type=int, help='Total number of GMPEs random samples')
