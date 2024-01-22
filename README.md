@@ -181,14 +181,14 @@ Put the `Shakemap` file `stationlist.json` in the `event-id/current` folder.
 Inspect `Shakemap` .json station file.
 
 ```bash
-python ProbShakemap.py --imt  --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
+python ProbShakemap.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
 ```
 OUTPUT
 
-`Data_stationfile_{imt}.pdf`: Plot data from Shakemap .json station file for the selected IMT ( in the example).
+`Data_stationfile_{imt}.pdf`: Plot data from Shakemap .json station file for the selected IMT (PGA in the example).
 
 <p align="center">
-    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_.png" alt="Data_stationfile_" width="60%" height="60%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_PGA.png" alt="Data_stationfile_PGA" width="60%" height="60%">
 </p>
 
 
@@ -199,7 +199,7 @@ Run the probabilistic analysis and save the output to a .HDF5 file with the foll
 scenario --> POI --> GMPEs realizations
 
 ```bash
-python ProbShakemap.py --imt  --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
+python ProbShakemap.py --imt PGA --tool Save_Output --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
 ```
 
 OUTPUT
@@ -212,7 +212,7 @@ OUTPUT
 Navigate and query the .HDF5 file.
 
 ```bash
-python ProbShakemap.py --tool QueryHDF5 --imt  --scenario 10 --pois_file POIs.txt
+python ProbShakemap.py --tool QueryHDF5 --imt PGA --scenario 10 --pois_file POIs.txt
 ```
 
 OUTPUT
@@ -238,7 +238,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 * Plots the calculated statistics at all the selected POIs.
 
 ```bash
-python ProbShakemap.py --imt  --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
+python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
 ```
 
 OUTPUT
@@ -250,7 +250,7 @@ The `npyFiles` folder contains:
 * `vector.npy`: a 2D array that stores the ground motion distributions across all POIs. The array has dimensions (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`), where `num_GMPEsRealizations` represents the number of realizations per scenario, and `num_scenarios` is the total number of scenarios in the ensemble; 
 * `thresholds_distrib.npy`: a 2D array representing the probabilistic distributions of ground motion across POIs. The array has dimensions (`num_pois`, 6,000), where 6,000 is the number of intervals into which the range of ground motion values has been discretized. Probabilities within each interval are weighted by the scenario weights and then aggregated across all scenarios in the ensemble;
 * `thresholds_stat.npy`: dictionary of statistics derived from the distributions in `thresholds_distrib.npy`. For each Point of Interest (POI), it returns: 'Weighted Mean', 'Arithmetic Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'; 
-* `vector_stat.npy`: dictionary of weighted statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it returns: 'Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95','Percentile 2_5', 'Percentile 97_5';
+* `vector_stat.npy`: dictionary of weighted statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it returns: 'Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95';
 * `weight.npy`: a 2D array that stores the normalized weights across all POIs. The array dimensions match those of `vector.npy`, which are (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`).
 
 
