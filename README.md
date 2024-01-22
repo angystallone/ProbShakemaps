@@ -12,7 +12,7 @@ Dependencies
 Command line usage
 ------------------
 <pre>
-usage: ProbShakemap.py [-h] [--imt {PGA,PGV,SA0.3),SA(1.0),SA(3.0}]
+usage: ProbShakemap.py [-h] [--imt {PGA,PGV,SA(0.3),SA(1.0),SA(3.0}]
                        [--tool {StationRecords,Save_Output,QueryHDF5}]
                        [--prob_tool {GetStatistics,GetDistributions,EnsemblePlot} [{GetStatistics,GetDistributions,EnsemblePlot} ...]]
                        [--numGMPEsRealizations NUMGMPESREALIZATIONS] [--num_processes NUM_PROCESSES]
