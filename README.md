@@ -1,6 +1,6 @@
 # ProbShakemap
 
-`ProbShakemap` is a Python toolbox that efficiently quantifies and propagates ensemble-based source uncertainty while accounting for model uncertainty by accommodating multiple GMMs (if available) and the inherent variability of GMMs themselves. It comes with a set of tools helping the user to visualize and explore the predictive distribution of ground motion at each point of interest. Designed for Urgent Computing applications.
+`ProbShakemap` is a Python toolbox that propagates source uncertainty from an ensemble of earthquake scenarios to ground motion predictions at a grid of target points. It accounts for model uncertainty by accommodating multiple GMMs and their inherent variability. The package includes `SeisEnsMan`, a tool for generating the ensemble of event-compatible source scenarios. The output consists of a set of products aiding the user to explore and visualize the predictive distribution of ground motion at each target point. Designed for Urgent Computing applications.
 
 Dependencies
 -----------------------------
@@ -90,7 +90,7 @@ git clone https://github.com/INGV/shakemap
 ```
 
 The folder `shakemap/data/shakemap_profiles/world/data` includes, as an example, the event-id folder for Norcia earthquake (`8863681/current`). The event-id folder contains the file `event.xml`, with basic information about the event. 
-You need to create an `event-id/current` folder for each new event and provide the corresponding `event.xml` file. The latter can be built easily: start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), which includes a specific Vs30 model for italy (Michelini et al., 2020). You can use a custom .grd Vs30 file.
+You need to create an `event-id/current` folder for each new event and provide the corresponding `event.xml` file. The latter can be built easily: start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), which includes a specific Vs30 model for italy (Michelini et al., 2020). You could also opt for using a custom .grd Vs30 file.
 
 Start Docker (download it from [here](https://www.docker.com/)) and build the shakemap Docker Image:
 
@@ -110,8 +110,8 @@ Download `ProbShakemap`:
 ```bash
 git clone https://github.com/INGV/ProbShakemap.git
 ```
-The `ProbShakemap` folder contains the input file, the list of scenarios and the POIs file related to the Amatrice example.
-Move the folder content to the 'world' folder. This is needed to preserve all the files after shutting down Docker.
+The `ProbShakemap` folder contains the input file, the list of scenarios and the POIs file related to the Amatrice earthquake example.
+Move the folder content to the 'world' folder (needed to preserve all the files after shutting down Docker):
 
 ```bash
 mv ./ProbShakemap/* ./data/shakemap_profiles/world/
@@ -150,13 +150,13 @@ HOW TO RUN
 **Generate the scenarios ensemble**
 
 Create the `event-id/current` folder for the event and provide the corresponding `event.xml` file. This will be used by `SeisEnsMan` to download the event QUAKEML file needed for generating the ensemble of event-compatible scenarios.
-Move to `SeisEnsManV2` directory in `path/to/shakemap/data/shakemap_profiles/world/` and use the following command (ensure that you set the `--nb_scen` parameter to the desired number of scenarios in the ensemble): 
+Activate the environment SeisEnsMan and move to `SeisEnsManV2` directory in `path/to/shakemap/data/shakemap_profiles/world/`. Then run the following command (set the `--nb_scen` parameter to the desired number of scenarios in the ensemble): 
 
 ```bash
 ./line_call.sh
 ```
 
-After being generated, the ensemble of scenarios is saved in `INPUT_FILES/ENSEMBLE` folder, ready to be queried by `ProbShakemap`. Any other old files has been moved to the `BACKUP` folder.
+After being generated, the ensemble of scenarios is saved in `INPUT_FILES/ENSEMBLE` folder, ready to be queried by `ProbShakemap`. Any other old file has been moved to the `BACKUP` folder.
 Before running `ProbShakemap`, make sure to deactivate the environment SeisEnsMan:
 
 ```bash
@@ -177,8 +177,7 @@ cd /home/shake/shakemap_profiles/world
 
 **TOOL: StationRecords**
 
-Put the `Shakemap` file `stationlist.json` in the `event-id/current` folder. 
-Inspect `Shakemap` .json station file.
+Plot data from `Shakemap` file `stationlist.json` (the file must be placed in the `event-id/current` folder). 
 
 ```bash
 python ProbShakemap.py --imt PGA --tool StationRecords --imt_min 0.01 --imt_max 10 --station_file stationlist.json
@@ -194,7 +193,7 @@ OUTPUT
 
 **TOOL: Save_Output**
 
-Run the probabilistic analysis and save the output to a .HDF5 file with the following hierarchical structure: 
+Run the probabilistic analysis and save the output to a .HDF5 file with the following hierarchical structure.
 
 scenario --> POI --> GMPEs realizations
 
@@ -230,12 +229,11 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **PROB_TOOLS**
 
-`ProbShakemap` comes with three 'prob tools': `GetStatistics`, `GetDistributions` and `EnsemblePlot`. The outputs are Probabilistic Shakemaps helping the user to explore the ground-motion predictive distributions at a set of POIs.
+`ProbShakemap` comes with three 'prob tools': `GetStatistics`, `GetDistributions` and `EnsemblePlot`. The outputs are intended to assist the user in exploring the ground-motion predictive distributions at a set of POIs.
 
 **TOOL: GetStatistics**
 
-* Calculates and save statistics of the predictive distribution. If you do not provide a file with scenarios weights, the scenarios are considered equally probable.
-* Plots the calculated statistics at all the selected POIs.
+Calculate and save statistics of the predictive distribution. Plot the calculated statistics at the POIs.
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
@@ -250,7 +248,7 @@ The `npyFiles` folder contains:
 * `vector.npy`: a 2D array that stores the ground motion distributions across all POIs. The array has dimensions (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`), where `num_GMPEsRealizations` represents the number of realizations per scenario, and `num_scenarios` is the total number of scenarios in the ensemble; 
 * `thresholds_distrib.npy`: a 2D array representing the probabilistic distributions of ground motion across POIs. The array has dimensions (`num_pois`, 6,000), where 6,000 is the number of intervals into which the range of ground motion values has been discretized. Probabilities within each interval are weighted by the scenario weights and then aggregated across all scenarios in the ensemble;
 * `thresholds_stat.npy`: dictionary of statistics derived from the distributions in `thresholds_distrib.npy`. For each Point of Interest (POI), it returns: 'Weighted Mean', 'Arithmetic Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'; 
-* `vector_stat.npy`: dictionary of weighted statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it returns: 'Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95';
+* `vector_stat.npy`: dictionary of weighted statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it returns: 'Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95','Percentile 2.5','Percentile 97.5';
 * `weight.npy`: a 2D array that stores the normalized weights across all POIs. The array dimensions match those of `vector.npy`, which are (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`).
 
 
@@ -260,9 +258,9 @@ The `npyFiles` folder contains:
 
 **TOOL: GetDistributions**
 
-Plots the cumulative distribution of the predicted ground-motion values and main statistics at a specific POI together with the ground-motion value recorded at the closest station.
+Plot the cumulative distribution of the predicted ground-motion values and main statistics at a specific POI together with the ground-motion value recorded at the closest station (or at a POI coincident with the station, if available).
 
-Put the `Shakemap` file `stationlist.json` in the `event-id/current` folder. 
+Note: the `Shakemap` file `stationlist.json` must be placed in the `event-id/current` folder. 
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool GetDistributions --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json
@@ -284,7 +282,7 @@ OUTPUT
 
 **TOOL: EnsemblePlot**
 
-Plots and summarizes the key statistical features of the distribution of predicted ground-motion values at the selected POIs.
+Plot and summarize the key statistical features of the distribution of predicted ground-motion values at the POIs.
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10
@@ -301,7 +299,7 @@ OUTPUT
 
 **POIs SUBSET OPTION**
 
-When using the tools `QueryHDF5`, `GetStatistics`, `GetDistributions` and `EnsemblePlot`, you can require to extract a subset of POIs within a maximum distance from the event epicenter following one of these two possible spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to):
+When using the tools `QueryHDF5`, `GetStatistics`, `GetDistributions` and `EnsemblePlot`, you can require to extract a subset of POIs within a maximum distance from the event epicenter following one of the following spatial distributions: <ins>random</ins> and <ins>azimuthally uniform</ins>. This changes the command line to:
 
 ```bash
 python ProbShakemap.py [...] --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
@@ -310,7 +308,7 @@ If <ins>azimuthally uniform</ins> is selected, POIs are chosen within a ring in 
 
 **MULTIPLE TOOLS AT THE SAME TIME**
 
-`ProbShakemap` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,`--imt_min`, `--imt_max`, `--pois_subset` etc.). For example:
+`ProbShakemap` can handle multiple tools at the same time. Be aware that, in this case, the same settings will apply (ie,`--imt_min`, `--imt_max`, `--pois_subset` etc.).
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 10 --station_file stationlist.json --pois_subset --n_pois 12 --max_distance 50 --pois_selection_method azimuth_uniform
