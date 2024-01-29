@@ -83,10 +83,10 @@ INSTALLATION
 
 **Set ProbShakemap**
 
-Clone the INGV shakemap GitHub repository into your working directory:
+Clone the INGV shakemap GitHub repository (tag v4.1.3) into your working directory:
 
 ```bash
-git clone https://github.com/INGV/shakemap
+git clone --branch v4.1.3 https://github.com/INGV/shakemap.git
 ```
 
 The folder `shakemap/data/shakemap_profiles/world/data` includes, as an example, the event-id folder for Norcia earthquake (`8863681/current`). The event-id folder contains the file `event.xml`, with basic information about the event. 
