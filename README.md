@@ -186,7 +186,7 @@ OUTPUT
 `Data_stationfile_{imt}.pdf`: Plot data from Shakemap .json station file for the selected IMT (PGA in the example).
 
 <p align="center">
-    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_PGA.png" alt="Data_stationfile_PGA" width="60%" height="60%">
+    <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/Data_stationfile_PGA_2.png" alt="Data_stationfile_PGA" width="60%" height="60%">
 </p>
 
 
