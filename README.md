@@ -164,7 +164,7 @@ deactivate
 
 **Run ProbShakemap**
 
-Start Docker and move to your working directory, then run:
+Start Docker and move back to `shakemap` directory, then run:
 
 ```bash
 docker run -it --rm -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
