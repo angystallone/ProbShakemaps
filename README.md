@@ -114,8 +114,7 @@ The `ProbShakemap` folder contains the input file, the list of scenarios and the
 Move the folder content to the 'world' folder (needed to preserve all the files after shutting down Docker):
 
 ```bash
-mv ./ProbShakemap/* ./data/shakemap_profiles/world/
-rm -rf ./ProbShakemap
+mv ./ProbShakemap/* ./data/shakemap_profiles/world/ && rm -rf ./ProbShakemap
 ```
 
 **Install SeisEnsMan**
