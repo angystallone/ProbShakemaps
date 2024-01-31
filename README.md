@@ -3,7 +3,7 @@
 `ProbShakemap` is a Python toolbox that propagates source uncertainty from an ensemble of earthquake scenarios to ground motion predictions at a grid of target points. It accounts for model uncertainty by accommodating multiple GMMs and their inherent variability. The package includes `SeisEnsMan`, a tool for generating the ensemble of event-compatible source scenarios. The output consists of a set of products aiding the user to explore and visualize the predictive distribution of ground motion at each target point. Designed for Urgent Computing applications.
 
 Dependencies
------------------------------
+------------
 
  * [Shakemap](https://github.com/DOI-USGS/ghsc-esi-shakemap)
  * [OpenQuake](https://github.com/gem/oq-engine/blob/master/README.md)
@@ -59,7 +59,7 @@ input params:
             
 
 REQUIRED TO RUN
-------------------
+---------------
 
 1) <ins>INGV shakemap Docker Image</ins> --> [INGV shakemap Docker Image](https://github.com/INGV/shakemap) is the INGV configuration of the [USGS Shakemap Docker Image](https://github.com/DOI-USGS/ghsc-esi-shakemap) incorporating specific GMMs and Vs30 map for the Italian region. Except for that, the two products are equivalent. See below for instructions on how to install the INGV shakemap Docker Image.
 2) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
@@ -79,7 +79,7 @@ REQUIRED TO RUN
 
 
 INSTALLATION
-------------------
+------------
 
 **Set ProbShakemap**
 
@@ -144,7 +144,7 @@ python3 -m pip install -r requirements.txt
 ```
 
 HOW TO RUN
-------------------
+----------
 
 **Generate the scenarios ensemble**
 
@@ -319,12 +319,22 @@ python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num
 
 
 License
------------------------------
+-------
 
 This project is released under the [MIT License](LICENSE).
 
 
 Contact
------------------------------
+--------
 
 If you need support write to [angela.stallone@ingv.it](mailto:angela.stallone@ingv.it).
+
+
+Contributions & Acknowledgements
+--------------------------------
+
+Jacopo Selva coded the `GetStatistics` tool; Louise Cordrie authored the `SeisEnsMan` tool and tested `ProbShakemap` on the INGV-Bologna ADA cluster.
+I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and for the technical support and Licia Faenza for testing ProbShakemap. 
+
+To cite ProbShakemap
+--------------------
