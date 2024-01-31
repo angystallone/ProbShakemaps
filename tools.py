@@ -557,7 +557,9 @@ class Main:
 
             print("********* LOADING Vs30 *******")
             # Vs30
-            vs30fullname = os.path.join(self.data_path, 'shakemap_data', 'vs30', vs30file)
+            #vs30fullname = os.path.join(self.data_path, 'shakemap_data', 'vs30', vs30file)
+            vs30fullname = os.path.join('/home/shake/shakemap_data/vs30', vs30file)
+            print(vs30fullname)
             vs30grid = GMTGrid.load(vs30fullname)
             # Interpolate Vs30 values at POIs 
             vs30_POIs = vs30grid.getValue(self.POIs_lat, self.POIs_lon, method="nearest")
