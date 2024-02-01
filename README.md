@@ -61,7 +61,7 @@ input params:
 REQUIRED TO RUN
 ---------------
 
-1) <ins>INGV shakemap Docker Image</ins> --> [INGV shakemap Docker Image](https://github.com/INGV/shakemap) is the INGV configuration of the [USGS Shakemap Docker Image](https://github.com/DOI-USGS/ghsc-esi-shakemap) incorporating specific GMMs and Vs30 map for the Italian region. Except for that, the two products are equivalent. See below for instructions on how to install the INGV shakemap Docker Image.
+1) <ins>INGV shakemap Docker Image</ins> --> [INGV shakemap Docker Image](https://github.com/INGV/shakemap/releases/tag/v4.1.3) is the INGV configuration of the [USGS Shakemap Docker Image](https://github.com/DOI-USGS/ghsc-esi-shakemap) incorporating specific GMMs and Vs30 map for the Italian region. Except for that, the two products are equivalent. See below for instructions on how to install the INGV shakemap Docker Image.
 2) <ins>POIs file</ins> --> two space-separated columns .txt file with LAT and LON of the POIs. The file must be put in the folder `INPUT_FILES`. 
 3) <ins>input_file.txt</ins> --> file containing the inputs required by `OpenQuake` and `Shakemap`. The file must be put in the folder `INPUT_FILES` (do not rename it). Be sure to set ID_Event equal to the event_id folder name (see Setting ProbShakemap section below).
 
@@ -97,12 +97,6 @@ Start Docker (download it from [here](https://www.docker.com/)) and build the sh
 ```bash
 cd shakemap
 DOCKER_BUILDKIT=1 docker build --no-cache --build-arg ENV_UID=$(id -u) --build-arg ENV_GID=$(id -g) --tag shakemap4 .
-```
-
-Test if you can enter into the container:
-
-```bash
-docker run -it --rm -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
 ```
 
 Download `ProbShakemap`:
