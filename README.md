@@ -90,13 +90,13 @@ git clone --branch v4.1.3 https://github.com/INGV/shakemap.git
 ```
 
 The folder `shakemap/data/shakemap_profiles/world/data` includes, as an example, the event-id folder for Norcia earthquake (`8863681/current`). The event-id folder contains the file `event.xml`, with basic information about the event. 
-You need to create an `event-id/current` folder for each new event and provide the corresponding `event.xml` file. The latter can be built easily: start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The folder `shakemap/data/shakemap_data/vs30` provides a global Vs30 file (`global_italy_vs30_clobber.grd`), which includes a specific Vs30 model for italy (Michelini et al., 2020). You could also opt for using a custom .grd Vs30 file.
+You need to create an `event-id/current` folder for each new event and provide the corresponding `event.xml` file. The latter can be built easily: start from the `event.xml` file provided for the Norcia example and then edit latitude, longitude, magnitude and time, the only information needed by `SeisEnsMan` to download the event QUAKEML file (see below). Make sure the event-id is the same you provided in `input_file.txt`. The Vs30 file (`global_italy_vs30_clobber.grd`) is placed in the Docker folder `/home/shake/shakemap_data/vs30` after building the image. The file includes a specific Vs30 model for italy (Michelini et al., 2020). 
 
 Start Docker (download it from [here](https://www.docker.com/)) and build the shakemap Docker Image:
 
 ```bash
 cd shakemap
-DOCKER_BUILDKIT=1 docker build --no-cache --build-arg ENV_UID=$(id -u) --build-arg ENV_GID=$(id -g) --tag shakemap4 .
+DOCKER_BUILDKIT=1 docker build --no-cache --build-arg ENV_UID=$(id -u) --build-arg ENV_GID=$(id -g) --tag shakemap4:4.1.3 .
 ```
 
 Download `ProbShakemap`:
@@ -161,7 +161,7 @@ deactivate
 Start Docker and move back to `shakemap` directory, then run:
 
 ```bash
-docker run -it --rm -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/shakemap_data:/home/shake/shakemap_data -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4
+docker run -it --rm -v $(pwd)/data/shakemap_profiles:/home/shake/shakemap_profiles -v $(pwd)/data/local:/home/shake/.local --entrypoint=bash shakemap4:4.1.3
 sm_profile -l
 cd /home/shake/shakemap_profiles/world
 ```
@@ -328,7 +328,7 @@ Contributions & Acknowledgements
 --------------------------------
 
 Jacopo Selva coded the `GetStatistics` tool; Louise Cordrie authored the `SeisEnsMan` tool and tested `ProbShakemap` on the INGV-Bologna ADA cluster.
-I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and for the technical support and Licia Faenza for testing ProbShakemap. 
+I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and Licia Faenza for testing ProbShakemap. 
 
 To cite ProbShakemap
 --------------------
