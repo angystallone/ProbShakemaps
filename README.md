@@ -123,12 +123,12 @@ python -m venv SeisEnsMan
 
 On macOS and Linux:
 ```bash
-source SeisEnsMan/bin/activate
+source [path_to]SeisEnsMan/bin/activate
 ```
 
 On Windows:
 ```bash
-SeisEnsMan\Scripts\activate
+[path_to]SeisEnsMan\Scripts\activate
 ```
 
 Then use the file `requirements.txt` provided in the folder `SeisEnsManV2` to install the required libraries:
