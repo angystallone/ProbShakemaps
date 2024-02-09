@@ -120,6 +120,8 @@ if os.path.exists(eventstatjson_fullpath):
 
 # BACKUP OF 'output' FOLDER
 start_folder = os.path.join(os.getcwd(), 'output')
+if not os.path.exists(start_folder):
+    os.makedirs(start_folder)
 timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 backup_folder = os.path.join(os.path.join(os.getcwd()), f"BACKUP/LIST_SCENARIOS_{timestamp}")
 if not os.path.exists(backup_folder):
