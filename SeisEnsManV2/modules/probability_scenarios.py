@@ -2,7 +2,7 @@ import sys
 import time
 import numpy as np
 
-from numba import jit
+# from numba import jit
 
 def compute_probability_scenarios(**kwargs):
 
@@ -406,8 +406,8 @@ def set_if_compute_scenarios(**kwargs):
     BScomputedYN   = False
     PScomputedYN   = False
 
-    tmpbs      = (short_term['magnitude_probability'] * short_term['RatioBSonTot']).sum()
-    tmpps      = (short_term['magnitude_probability'] * short_term['RatioPSonTot']).sum()
+    tmpbs = short_term #(short_term['magnitude_probability'] * short_term['RatioBSonTot']).sum()
+    tmpps = 1.0-short_term #(short_term['magnitude_probability'] * short_term['RatioPSonTot']).sum()
 
 
 

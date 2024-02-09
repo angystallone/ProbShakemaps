@@ -329,6 +329,3 @@ Contributions & Acknowledgements
 
 Jacopo Selva coded the `GetStatistics` tool; Louise Cordrie authored the `SeisEnsMan` tool and tested `ProbShakemap` on the INGV-Bologna ADA cluster.
 I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and Licia Faenza for testing ProbShakemap. 
-
-To cite ProbShakemap
---------------------

@@ -290,6 +290,8 @@ def get_params():
 
     # Install dir and event dir
     install_path, data_path = get_config_paths()
+    print(install_path)
+    print(data_path)
     event_dir = os.path.join(data_path, ID_Event, "current")
 
     if not os.path.exists(event_dir):
@@ -557,9 +559,7 @@ class Main:
 
             print("********* LOADING Vs30 *******")
             # Vs30
-            #vs30fullname = os.path.join(self.data_path, 'shakemap_data', 'vs30', vs30file)
-            vs30fullname = os.path.join('/home/shake/shakemap_data/vs30', vs30file)
-            print(vs30fullname)
+            vs30fullname = os.path.join(self.data_path, 'shakemap_data', 'vs30', vs30file)
             vs30grid = GMTGrid.load(vs30fullname)
             # Interpolate Vs30 values at POIs 
             vs30_POIs = vs30grid.getValue(self.POIs_lat, self.POIs_lon, method="nearest")

@@ -5,35 +5,25 @@
             "geometry": {
                 "type": "Point",
                 "coordinates": [
-                    13.1092,
-                    42.8303,
-                    10.0
                 ]
             },
             "type": "Features",
             "properties": {
                 "originId": 99999999,
                 "version": 100,
-                "time": "2016-10-30T06:40",
                 "eventId": 99999999,
-                "mag": 6.5,
                 "geojson_creationTime": "",
                 "magAuthor": "early-est_ee1.1.9#ee",
-                "magType": "Mw",
+                "magType": "Mwp",
                 "type": "earthquake",
-                "place": "4 km NE Norcia (PG)",
-                "mag_percentiles": {
-                    "p16": 6.2,
-                    "p50": 6.5,
-                    "p84": 6.8
-                },
+                "place": "default",
                 "cov_matrix": {
-                    "XX": 10.0,
-                    "XY": 0.0,
-                    "XZ": 0.0,
-                    "YY": 10.0,
-                    "YZ": 0.0,
-                    "ZZ": 10.0
+                    "XX": "10.0",
+                    "XY": "0.0",
+                    "XZ": "0.0",
+                    "YY": "10.0",
+                    "YZ": "0.0",
+                    "ZZ": "10.0"
                 },
                 "author": "early-est_ee1.1.9#ee"
             }

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Import system modules
 import os
 import ast
@@ -96,29 +98,28 @@ pre_selection = pre_selection_of_scenarios(cfg                = Config,
 
 
 ##########################################################
-# COMPUTE PROB DISTR
-print('Compute short term probability distribution')
-short_term_probability  = short_term_probability_distribution(cfg                = Config,
-                                                              args               = args,
-                                                              event_parameters   = event_parameters,
-                                                              LongTermInfo       = LongTermInfo,
-                                                              PSBarInfo          = PSBarInfo,
-                                                              lambda_bsps        = lambda_bsps,
-                                                              pre_selection      = pre_selection)
+# # COMPUTE PROB DISTR
+# print('Compute short term probability distribution')
+# short_term_probability  = short_term_probability_distribution(cfg                = Config,
+#                                                               args               = args,
+#                                                               event_parameters   = event_parameters,
+#                                                               LongTermInfo       = LongTermInfo,
+#                                                               PSBarInfo          = PSBarInfo,
+#                                                               lambda_bsps        = lambda_bsps,
+#                                                               pre_selection      = pre_selection)
 
 
 ##COMPUTE PROBABILITIES SCENARIOS: line 840
-print('Compute Probabilities scenarios')
-probability_scenarios = compute_probability_scenarios(cfg                = Config,
-                                                      args               = args,
-                                                      event_parameters   = event_parameters,
-                                                      LongTermInfo       = LongTermInfo,
-                                                      PSBarInfo          = PSBarInfo,
-                                                      lambda_bsps        = lambda_bsps,
-                                                      pre_selection      = pre_selection,
-                                                      regions            = Region_files,
-                                                      short_term         = short_term_probability,
-                                                      Scenarios_PS       = Scenarios_PS)
+# print('Compute Probabilities scenarios')
+# probability_scenarios = compute_probability_scenarios(cfg                = Config,
+#                                                       args               = args,
+#                                                       event_parameters   = event_parameters,
+#                                                       LongTermInfo       = LongTermInfo,
+#                                                       PSBarInfo          = PSBarInfo,
+#                                                       lambda_bsps        = lambda_bsps,
+#                                                       pre_selection      = pre_selection,
+#                                                       regions            = Region_files,
+#                                                       Scenarios_PS       = Scenarios_PS)
 
 
 ############### Real sampling ########################
@@ -133,9 +134,7 @@ sampled_ensemble_RS = compute_ensemble_sampling_RS(cfg                = Config,
                                           lambda_bsps        = lambda_bsps,
                                           pre_selection      = pre_selection,
                                           regions            = Region_files,
-                                          short_term         = short_term_probability,
                                           Scenarios_PS       = Scenarios_PS,
-                                          proba_scenarios    = probability_scenarios,
                                           RS_samp_scen       = RS_samp_scen)
 
 print('############# Writing list of scenarios #############')
