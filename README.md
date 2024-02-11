@@ -312,11 +312,16 @@ python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num
 `ProbShakemap`  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
 
 
-License
--------
+Citation
+--------
 
-This project is released under the [MIT License](LICENSE).
+If you use `ProbShakemap` in your research, please cite using the following citation:
 
+@software{Stallone_ProbShakemap,
+author = {Stallone, Angela and Cordrie, Louise  and Selva, Jacopo},
+title = {{ProbShakemap}},
+url = {https://github.com/INGV/ProbShakemap}
+}
 
 Contact
 --------
