@@ -33,3 +33,4 @@ identifiers:
   - type: url
     value: 'https://github.com/INGV/ProbShakemap/releases/tag/v1.0'
     description: GitHub Tag URL
+repository-code: 'https://github.com/INGV/ProbShakemap'
