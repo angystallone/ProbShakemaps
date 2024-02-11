@@ -1,0 +1,35 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ProbShakemap
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Angela
+    family-names: Stallone
+    email: angela.stallone@ingv.it
+    affiliation: >-
+      Istituto Nazionale di Geofisica e Vulcanologia INGV,
+      Bologna, Italy
+    orcid: 'https://orcid.org/0000-0002-8141-017X'
+  - given-names: 'Louise '
+    family-names: Cordrie
+    orcid: 'https://orcid.org/0000-0003-2290-8637'
+    email: louise.cordrie@ingv.it
+    affiliation: >-
+      Istituto Nazionale di Geofisica e Vulcanologia INGV,
+      Bologna, Italy
+  - given-names: Jacopo
+    family-names: Selva
+    email: jacopo.selva@ingv.it
+    affiliation: >-
+      University of Naples, Federico II, Dept. of Earth,
+      Environmental, and Resources Sciences, Napoli, Italy
+    orcid: 'https://orcid.org/0000-0001-6263-6934'
+identifiers:
+  - type: url
+    value: 'https://github.com/INGV/ProbShakemap/releases/tag/v1.0'
+    description: GitHub Tag URL
