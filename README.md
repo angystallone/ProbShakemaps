@@ -317,11 +317,13 @@ Citation
 
 If you use `ProbShakemap` in your research, please cite using the following citation:
 
+```bash
 @software{Stallone_ProbShakemap,
 author = {Stallone, Angela and Cordrie, Louise  and Selva, Jacopo},
 title = {{ProbShakemap}},
 url = {https://github.com/INGV/ProbShakemap}
 }
+```
 
 Contact
 --------
