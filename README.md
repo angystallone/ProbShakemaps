@@ -312,6 +312,18 @@ python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num
 `ProbShakemap`  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
 
 
+Contact
+--------
+
+If you need support write to [angela.stallone@ingv.it](mailto:angela.stallone@ingv.it).
+
+
+Contributions & Acknowledgements
+--------------------------------
+
+Jacopo Selva coded the `GetStatistics` tool; Louise Cordrie authored the `SeisEnsMan` tool and tested `ProbShakemap` on the INGV-Bologna ADA cluster.
+I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and Licia Faenza for testing ProbShakemap. 
+
 Citation
 --------
 
@@ -325,14 +337,5 @@ url = {https://github.com/INGV/ProbShakemap}
 }
 ```
 
-Contact
---------
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10654186.svg)](https://doi.org/10.5281/zenodo.10654186)
 
-If you need support write to [angela.stallone@ingv.it](mailto:angela.stallone@ingv.it).
-
-
-Contributions & Acknowledgements
---------------------------------
-
-Jacopo Selva coded the `GetStatistics` tool; Louise Cordrie authored the `SeisEnsMan` tool and tested `ProbShakemap` on the INGV-Bologna ADA cluster.
-I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and Licia Faenza for testing ProbShakemap. 
