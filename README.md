@@ -322,7 +322,7 @@ Contributions & Acknowledgements
 --------------------------------
 
 Jacopo Selva coded the `GetStatistics` tool; Louise Cordrie authored the `SeisEnsMan` tool and tested `ProbShakemap` on the INGV-Bologna ADA cluster.
-I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and Licia Faenza for testing ProbShakemap. 
+I thank Valentino Lauciani for testing and developing the INGV Shakemap Docker and Licia Faenza for testing ProbShakemap. I also thank Michele Proietto (@https://github.com/miproietto) for assisting us in building the Docker image on the HPC cluster using Singularity.
 
 Citation
 --------
