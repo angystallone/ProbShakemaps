@@ -12,15 +12,13 @@ Dependencies
 Command line usage
 ------------------
 <pre>
-usage: ProbShakemap.py [-h] [--imt {PGA,PGV,SA(0.3),SA(1.0),SA(3.0}]
-                       [--tool {StationRecords,Save_Output,QueryHDF5}]
+usage: ProbShakemap.py [-h] [--imt {PGA,PGV,SA0.3),SA(1.0),SA(3.0}] [--tool {StationRecords,Save_Output,QueryHDF5}]
                        [--prob_tool {GetStatistics,GetDistributions,EnsemblePlot} [{GetStatistics,GetDistributions,EnsemblePlot} ...]]
                        [--numGMPEsRealizations NUMGMPESREALIZATIONS] [--num_processes NUM_PROCESSES]
-                       [--imt_min IMT_MIN] [--imt_max IMT_MAX] [--station_file STATION_FILE]
-                       [--scenario SCENARIO] [--pois_file POIS_FILE] [--deg_round DEG_ROUND]
-                       [--pois_subset] [--n_pois N_POIS] [--max_distance MAX_DISTANCE]
-                       [--pois_selection_method {random,azimuth_uniform}]
-                       [--fileScenariosWeights FILESCENARIOSWEIGHTS]
+                       [--imt_min IMT_MIN] [--imt_max IMT_MAX] [--station_file STATION_FILE] [--scenario SCENARIO]
+                       [--pois_file POIS_FILE] [--deg_round DEG_ROUND] [--pois_subset] [--n_pois N_POIS]
+                       [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}]
+                       [--vector_npy] [--fileScenariosWeights FILESCENARIOSWEIGHTS]
 
 ProbShakemap Toolbox
 
@@ -53,6 +51,7 @@ input params:
                         Max distance from epicenter of POIs in the subset
   --pois_selection_method {random,azimuth_uniform}
                         Selection method for the POIs of the subset
+  --vector_npy          Store ground motion distributions at all POIs (vector.npy)
   --fileScenariosWeights FILESCENARIOSWEIGHTS
                         File with scenarios weights
 </pre>                        
@@ -73,7 +72,8 @@ REQUIRED TO RUN
 > * CorrelationModel: as required from openquake.hazardlib.correlation.
 > * CrosscorrModel: as required from openquake.hazardlib.cross_orrelation.
 > * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
-> * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
+> * truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation). Note that the truncation feature is lost if you use correlation (see OpenQuake documentation). This parameter is only accounted for when 'NoCrossCorrelation' is selected by the user.
+> * seed: Random seed to ensure reproducibility in sampling from the GMMs.
 
 4) <ins>fileScenariosWeights.txt</ins> --> File with scenarios weights (optional).  The file must be put in the folder `INPUT_FILES` (do not rename it). 
 
@@ -226,7 +226,7 @@ GMF realizations at Site_LAT:43.0846_LON:13.4778 for Scenario_10: [0.18333985, 0
 
 **TOOL: GetStatistics**
 
-Calculate and save statistics of the predictive distribution. Plot the calculated statistics at the POIs.
+Calculate, save and plot the statistics of the ground motion predictive distributions at all POIs.
 
 ```bash
 python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --pois_file POIs.txt --numGMPEsRealizations 10 --imt_min 0.001 --imt_max 1
@@ -234,16 +234,12 @@ python ProbShakemap.py --imt PGA --prob_tool GetStatistics --num_processes 8 --p
 
 OUTPUT
 
-* npy files with statistics saved in the `npyFiles` folder
-* map distributions of statistics in `vector_stat.npy` saved in the `STATISTICS` folder
+* npy files with the statistics (saved in the `npyFiles` folder)
+* map view of the statistics in `vector_stat.npy` (saved in the `STATISTICS` folder)
 
-The `npyFiles` folder contains:
-* `vector.npy`: a 2D array that stores the ground motion distributions across all POIs. The array has dimensions (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`), where `num_GMPEsRealizations` represents the number of realizations per scenario, and `num_scenarios` is the total number of scenarios in the ensemble; 
-* `thresholds_distrib.npy`: a 2D array representing the probabilistic distributions of ground motion across POIs. The array has dimensions (`num_pois`, 6,000), where 6,000 is the number of intervals into which the range of ground motion values has been discretized. Probabilities within each interval are weighted by the scenario weights and then aggregated across all scenarios in the ensemble;
-* `thresholds_stat.npy`: dictionary of statistics derived from the distributions in `thresholds_distrib.npy`. For each Point of Interest (POI), it returns: 'Weighted Mean', 'Arithmetic Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90'; 
-* `vector_stat.npy`: dictionary of weighted statistics computed from the distributions in `vector.npy`. For each Point of Interest (POI), it returns: 'Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95','Percentile 2.5','Percentile 97.5';
-* `weight.npy`: a 2D array that stores the normalized weights across all POIs. The array dimensions match those of `vector.npy`, which are (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`).
-
+Output saved in the `npyFiles` folder:
+* `vector_stat.npy`: dictionary of statistics computed for the ground motion distributions at all POIs: 'Mean', 'Median','Percentile 10','Percentile 20','Percentile 80','Percentile 90','Percentile 5','Percentile 95','Percentile 2.5','Percentile 97.5';
+* (OPTIONAL, with command `--vector_npy`) `vector.npy`: a 2D array that stores the ground-motion distributions at all POIs. The array has dimensions (`num_pois`, `num_GMPEsRealizations` * `num_scenarios`), where `num_GMPEsRealizations` represents the number of realizations per scenario, and `num_scenarios` is the total number of scenarios in the ensemble. 
 
 <p align="center">
     <img src="https://github.com/INGV/ProbShakemap/blob/main/OUTPUT_REPO/STATISTICS/summary_stats_forReadMe.png" alt="SummaryStats" width="90%" height="90%">
@@ -309,7 +305,7 @@ python ProbShakemap.py --imt PGA --prob_tool GetDistributions EnsemblePlot --num
 
 **HPC**
 
-`ProbShakemap`  can be run on a cluster enjoying parallelization. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
+`ProbShakemap` can be executed on a HPC cluster. Note that this implies converting the Docker image into Singularity’s native format, namely the Singularity Image Format (SIF). The .sif image of the shakemap Docker image can be provided upon request. See an example of bash file to run the code on a HPC cluster at [run_code.bash](https://github.com/angystallone/ProbShakemap/blob/main/run_code.bash). IMPORTANT: the number set at `--ntasks-per-node` must coincide with `num_processes`.
 
 
 Contact
