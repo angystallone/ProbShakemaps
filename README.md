@@ -18,7 +18,7 @@ usage: ProbShakemap.py [-h] [--imt {PGA,PGV,SA0.3),SA(1.0),SA(3.0}] [--tool {Sta
                        [--imt_min IMT_MIN] [--imt_max IMT_MAX] [--station_file STATION_FILE] [--scenario SCENARIO]
                        [--pois_file POIS_FILE] [--deg_round DEG_ROUND] [--pois_subset] [--n_pois N_POIS]
                        [--max_distance MAX_DISTANCE] [--pois_selection_method {random,azimuth_uniform}]
-                       [--vector_npy] [--fileScenariosWeights FILESCENARIOSWEIGHTS]
+                       [--reuse_pois_subset] [--vector_npy] [--fileScenariosWeights FILESCENARIOSWEIGHTS]
 
 ProbShakemap Toolbox
 
@@ -51,6 +51,7 @@ input params:
                         Max distance from epicenter of POIs in the subset
   --pois_selection_method {random,azimuth_uniform}
                         Selection method for the POIs of the subset
+  --reuse_pois_subset   Reuse the subset of POIs already extracted in POIs.txt
   --vector_npy          Store ground motion distributions at all POIs (vector.npy)
   --fileScenariosWeights FILESCENARIOSWEIGHTS
                         File with scenarios weights
