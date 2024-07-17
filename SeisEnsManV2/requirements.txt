@@ -33,7 +33,7 @@ pyparsing==3.1.1
 pyproj==3.6.1
 pyshp==2.3.1
 python-dateutil==2.8.2
-requests==2.31.0
+requests==2.32.2
 reverse_geocoder==1.5.1
 scipy==1.11.3
 shapely==2.0.1
