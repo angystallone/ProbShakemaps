@@ -42,7 +42,7 @@ SQLAlchemy==2.0.21
 sympy==1.12
 tornado==6.3.3
 typing_extensions==4.8.0
-urllib3==2.0.7
+urllib3==2.2.2
 utm==0.7.0
 xmltodict==0.13.0
 xyzservices==2023.10.1
