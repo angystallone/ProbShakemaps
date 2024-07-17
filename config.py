@@ -19,6 +19,7 @@ def load_config(file):
     CrosscorrModel = str(lines[6].split( )[1])
     vs30_clustering = lines[7].split()[1] == 'True'
     truncation_level = float(lines[8].split( )[1])
+    seed = int(lines[9].split( )[1])
     
     # Create and return configuration dictionary
     config = {
@@ -30,7 +31,8 @@ def load_config(file):
         'CorrelationModel': CorrelationModel,
         'CrosscorrModel': CrosscorrModel,
         'vs30_clustering': vs30_clustering,
-        'truncation_level': truncation_level
+        'truncation_level': truncation_level,
+        'seed': seed
     }
     
     return config

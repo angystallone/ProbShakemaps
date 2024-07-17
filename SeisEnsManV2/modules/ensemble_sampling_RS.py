@@ -12,11 +12,16 @@ from mix_utilities import NormMultiDvec
 from scaling_laws  import correct_BS_vertical_position
 from scaling_laws  import correct_BS_horizontal_position
 from scaling_laws  import correct_PS_horizontal_position
+from scaling_laws  import mag_to_w_BS
+from scaling_laws  import mag_to_l_BS
+from scaling_laws  import mag_to_w_leonardo
+from scaling_laws  import mag_to_a_leonardo
 import scipy
 from numpy.linalg import inv
 import emcee
 import copy
 import math
+import pyproj
 from math import radians, cos, sin, asin, sqrt
 from pyproj import Proj, transform
 
@@ -35,7 +40,8 @@ def compute_ensemble_sampling_RS(**kwargs):
 
     # Choice of the region #
     if (ee['lat']>28.5 and ee['lat']<47.0 and ee['lon']>1.0 and ee['lon']<22.0) or (ee['lat']>32.0 and ee['lat']<42.0 and ee['lon']>-7.0 and ee['lon']<=1.0) or (ee['lat']>30.0 and ee['lat']<41.5 and ee['lon']>=22.0 and ee['lon']<37.5):
-        RS_type='LH'
+        #RS_type='LH'
+        RS_type='MC'
         print('Event inside the Mediterranean Area')
     else:
         RS_type='MC'
@@ -215,12 +221,12 @@ def region_med(latlon,pre_selection,Discretizations,region_files):
     # Inside the original code the strike/dip/rake
     # do not depend of the magnitude and position
     bs2_pos = len(pre_selection['BS2_Position_Selection_inn'])
-    d_latlon=np.zeros((bs2_pos,2))
+    d_lonlat=np.zeros((bs2_pos,2))
     d_diff=np.zeros((bs2_pos))
     for val in range(bs2_pos):
             tmp_idx = pre_selection['BS2_Position_Selection_inn'][val]
-            d_latlon[val,:] = Discretizations['BS-2_Position']['Val'][tmp_idx].split()
-            d_diff[val] = haversine(latlon[1], latlon[0], d_latlon[val,0], d_latlon[val,1])
+            d_lonlat[val,:] = Discretizations['BS-2_Position']['Val'][tmp_idx].split()
+            d_diff[val] = haversine(latlon[1], latlon[0], d_lonlat[val,0], d_lonlat[val,1])
     ipos_idx = int(np.argmin(d_diff))
     ipos = pre_selection['BS2_Position_Selection_inn'][ipos_idx]
     ireg = Discretizations['BS-2_Position']['Region'][ipos]
@@ -251,7 +257,6 @@ def region_med(latlon,pre_selection,Discretizations,region_files):
     random_value = np.random.random()
     iangle,proba_a = find_nearest(int_ens,random_value)
     proba_angles=tmpProbAngles[iangle]
-    #samp_ens[Nid]['prob_angles_bs'] = proba
     str_val,dip_val,rak_val = Discretizations['BS-4_FocalMechanism']['Val'][iangle].split()
     dip_val_rad=math.radians(float(dip_val))
 
@@ -293,6 +298,37 @@ def region_world(latlon,world_ang,world_prob,world_pos):
     dip_val_rad=math.radians(float(dip_val))
 
     return str_val,dip_val,rak_val,dip_val_rad,ireg
+
+def adjust_utm_values(lat_val, lon_val, zone_number, stop_id):
+    """Adjust UTM values to ensure they fall within valid ranges."""
+    # Typical UTM values range for easting is between 100,000 and 900,000
+    if lat_val < 100000.0 or lat_val > 900000.0:
+        stop_id=0
+        if lat_val < 100000.0:
+            lat_val = 900000.0 - (100000.0 - lat_val)
+            zone_number -= 1
+        elif lat_val > 900000.0:
+            lat_val = 100000.0 + (lat_val - 900000.0)
+            zone_number += 1
+    else:
+        stop_id=1
+    return lat_val, lon_val, zone_number, stop_id
+
+def convert_utm_to_wgs84(utm_zone, easting, northing, northern):
+    # Define the UTM CRS based on the zone
+    if northern:
+       utm_crs = pyproj.CRS(f"EPSG:326{utm_zone}")
+    else:
+       utm_crs = pyproj.CRS(f"EPSG:327{utm_zone}")
+    wgs84_crs = pyproj.CRS("EPSG:4326")
+    
+    # Create transformer
+    transformer = pyproj.Transformer.from_crs(utm_crs, wgs84_crs, always_xy=True)
+    
+    # Perform the transformation
+    lon, lat = transformer.transform(easting, northing)
+    
+    return lon, lat
 
 def bs_probability_scenarios_RMCS(**kwargs):
 
@@ -371,21 +407,16 @@ def bs_probability_scenarios_RMCS(**kwargs):
        else:
            mag_val_disc=mag_val
        
-       ### Compute vertical half_width with respect the magnitude ###
-       v_hwidth = correct_BS_vertical_position(mag = mag_val)
-       h_hwidth = correct_BS_horizontal_position(mag = mag_val)
-       area = (2.0*v_hwidth/(math.sin(math.pi/4)))*(2.0*h_hwidth)
-       #area=math.pow(10.0, (mag_val - 4.185))*(1000)**2
-       #v_hwidth = math.sqrt(area)*0.5 #correct_BS_vertical_position(mag = mag_val)
-       #h_hwidth = math.sqrt(area)*0.5 #correct_BS_horizontal_position(mag = mag_val)
-       # convention L/W to check
-       # Leonard reference
-       length = 2.0*h_hwidth # simplified version
+       ### Compute length and width with respect the magnitude ###
+       width = mag_to_w_BS(mag=mag_val, type_scala='M2W')
+       length = mag_to_l_BS(mag=mag_val, type_scala='M2L')
+       area = width*length
+
+       ### Moment and slip ###
        rig = 30.0e9
-       ### Moment ###
        Mo=10**((mag_val+10.7)*(3.0/2.0))*1e-7
        slip=Mo/(area*rig)
-       
+             
        ### Choice of the position (lat, lon, depth) ###
        ################################################
 
@@ -395,9 +426,11 @@ def bs_probability_scenarios_RMCS(**kwargs):
                                      [ee_d['cov_matrix']['XZ'], ee_d['cov_matrix']['YZ'], ee_d['cov_matrix']['ZZ']]])
        co = PosCovMat_3d*1000000
        cov = copy.deepcopy(co) #np.zeros((3,3))
-       cov[0,0] = co[0,0] + h_hwidth**2
-       cov[1,1] = co[1,1] + h_hwidth**2
-       cov[2,2] = co[2,2] + v_hwidth**2
+       
+       cov[0,0] = co[0,0] + (0.5*length)**2
+       cov[1,1] = co[1,1] + (0.5*length)**2
+       cov[2,2] = co[2,2] + (math.sin(math.pi/4)*0.5*width)**2
+
        mean=xyz
        
        # Definition of the resolution of the gaussian #
@@ -405,11 +438,11 @@ def bs_probability_scenarios_RMCS(**kwargs):
        ee_d=copy.deepcopy(ee) 
        dip_min=math.radians(float(10.0))
        depmax=500.0*1000.0 # no depth limit
-       depmin=1000.0+((area/length/2.0)*math.sin(dip_min))/math.sin(math.pi/4)
-       bounds[0,0]=xyz[0]
-       bounds[0,1]=xyz[0]
-       bounds[1,0]=xyz[1]
-       bounds[1,1]=xyz[1]
+       depmin=1000.0+(width/2.0)*math.sin(dip_min)
+       bounds[0,0]=xyz[0]-(2.0*length)
+       bounds[0,1]=xyz[0]+(2.0*length)
+       bounds[1,0]=xyz[1]-(2.0*length)
+       bounds[1,1]=xyz[1]+(2.0*length)
        bounds[2,0]=depmin
        bounds[2,1]=depmax 
        # Creation of the Guassian #
@@ -420,7 +453,7 @@ def bs_probability_scenarios_RMCS(**kwargs):
        # Search for uncompatible values #
        izero=[]
        for iii in range(len(x)):
-           if np.any(x[iii,0] < 0) or np.any(x[iii,1] < 0):
+           if np.any(x[iii,0] < bounds[0,0]) or np.any(x[iii,0] > bounds[0,1]) or np.any(x[iii,1] < bounds[1,0]) or np.any(x[iii,1] > bounds[1,1]):
               izero=np.append(izero,int(iii))
            if np.any(x[iii,2] < bounds[2,0]) or np.any(x[iii,2] > bounds[2,1]):
               izero=np.append(izero,int(iii))
@@ -443,10 +476,12 @@ def bs_probability_scenarios_RMCS(**kwargs):
        pos_fin=x[idx]
        prob_fin=prob_mod[idx]
        pos_fin=x[0]
-       lat_val=pos_fin[0]
-       lon_val=pos_fin[1]
+       #print('Final position :',pos_fin)
+       lon_val=pos_fin[0]
+       lat_val=pos_fin[1]
        dep_val=pos_fin[2]
 
+       # Checking depth
        if dep_val > depmax:
           dep_val=depmax
        elif dep_val < depmin:
@@ -454,33 +489,23 @@ def bs_probability_scenarios_RMCS(**kwargs):
 
        # Searching latlon
        latlon = np.zeros((2))
-       utm_zone, hemisphere = wgs84_to_utm(ee['lat'], ee['lon'])
+       utm_zone, hemisphere = wgs84_to_utm(ee['lat'],ee['lon'])
        if hemisphere=='S':
            north=False
        else:
            north=True
-       # Conversion into Lat/Lon degree values
-       if (lat_val>2000000) or (lat_val<0):
-           lat_val = 100001.0
-           lon_val = 100001.0
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone, northern=north)
-       elif (lat_val>100000) and (lat_val<1000000):
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone, northern=north)
-       elif (lat_val>1000000):
-           lat_val=100000.0+(lat_val-999999.0)
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone+1, northern=north)
-       else:
-           lat_val=999999.0-(100000.0-lat_val)
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone-1, northern=north)
-  
+                    
+       ## Conversion into Lat/Lon degree values
+       #stop_id=0
+       #while stop_id<1:
+       #     lat_val, lon_val, utm_zone, stop_id = adjust_utm_values(lat_val, lon_val, utm_zone, stop_id)
+       #
+       ##latlon[0], latlon[1] = utm.to_latlon(lat_val,
+       ##                           lon_val,
+       ##                           utm_zone, northern=north)
+       
+       latlon[1], latlon[0] = convert_utm_to_wgs84(utm_zone, lon_val,
+                                  lat_val,northern=north)
 
        if region=='med':
            str_val,dip_val,rak_val,dip_val_rad,ireg = region_med(latlon,pre_selection,Discretizations,region_files)
@@ -502,17 +527,14 @@ def bs_probability_scenarios_RMCS(**kwargs):
        low_rak=float(rak_val)-45.0
        high_rak=float(rak_val)+45.0
        rak_real_val=np.random.uniform(low=low_rak, high=high_rak)
-       if rak_real_val>360:
-           rak_real_val=rak_real_val-360.0
-       elif rak_real_val<0:
-           rak_real_val=rak_real_val+360.0
        ## GMPEs angle convention ###
        if rak_real_val>180:
            rak_real_val=rak_real_val-360.0
+       rak_real_val=float(rak_real_val)
        # Dip angle: uniform law #
        if region=='med':
-           low_dip=max(10,float(dip_val)-45.0)
-           high_dip=min(90,float(dip_val)+45.0)
+           low_dip=max(10,float(dip_val)-10.0)
+           high_dip=min(90,float(dip_val)+10.0)
        else:
            low_dip=max(10,float(dip_val)-11.25)
            high_dip=min(90,float(dip_val)+11.25)
@@ -521,11 +543,14 @@ def bs_probability_scenarios_RMCS(**kwargs):
        dip_real_val_rad=math.radians(float(dip_real_val))
 
        ### Re-evaluation of the depth: the fault plane should not reach the surface ###
-       max_dip=max(float(dip_val),dip_real_val)
-       max_dip_rad=math.radians(float(max_dip))
-       lim_dep=1000.0+((area/length/2.0)*math.sin(max_dip_rad))/math.sin(math.pi/4)
+       #width_leo = mag_to_w_leonardo(mag=mag_val,rake=rak_real_val)
+       area_leo = mag_to_a_leonardo(mag=mag_val,rake=rak_real_val)
+       aratio = 7
+       width_leo = 1000.0 * (area_leo / aratio)**0.5
+       lim_dep=1000.0+((width_leo/2.0)*math.sin(dip_real_val_rad))
        if dep_val<lim_dep:
           dep_val=lim_dep
+       area = length*width
 
        ### Slip, mag and region ###
        ############################
@@ -542,10 +567,9 @@ def bs_probability_scenarios_RMCS(**kwargs):
        ###############################
        real_val[i,0]=ireg
        real_val[i,1]=mag_val
-       real_val[i,2]=latlon[1]
-       real_val[i,3]=latlon[0]
-       real_val[i,4]=dep_val/1000.0 #(dep_val-(v_hwidth*math.sin(dip_val_rad)/math.sin(math.pi/4)))/1000.0 #math.sin(math.pi/4)))/1000.0
-       #real_val[i,4]=(dep_val+(v_hwidth*math.sin(dip_val_rad)/math.sin(math.pi/4)))/1000.0 #math.sin(math.pi/4)))/1000.0
+       real_val[i,2]=latlon[0]
+       real_val[i,3]=latlon[1]
+       real_val[i,4]=dep_val/1000.0 
        real_val[i,5]=str_real_val
        real_val[i,6]=dip_real_val
        real_val[i,7]=rak_real_val
@@ -587,26 +611,6 @@ def bs_probability_scenarios_RLHS(**kwargs):
 
     print('Ensemble LH')
 
-    ### Load world angles combinations (Selva_Taroni_2021) ###
-    file_ang = './IO/world-fm/Angles_Combinations.txt'
-    world_ang=np.zeros((128,3))
-    with open(file_ang,'r') as f:
-        #next(f)
-        for (il, line) in enumerate(f):
-            world_ang[il,:] = np.array(line.split())
-
-    ### Load world angles probabilities for each cell of the world grid (Selva_Taroni_2021) ###
-    file_model = './IO/world-fm/Final_Model.txt'
-    world_prob=np.zeros((64800,128))
-    world_pos=np.zeros((64800,10))
-    with open(file_model,'r') as f:
-        #next(f)
-        for (il, line) in enumerate(f):
-            col = np.array(line.split())
-            world_prob[il,:] = col[10::]
-            world_pos[il,:] = col[0:10]
-
-    #if(samp_ens[Nid]['BScomputedYN'] == False or short_term['BS_computed_YN'] == False or pre_selection['BS_scenarios'] == False):
     if(samp_ens[Nid]['BScomputedYN'] == False or pre_selection['BS_scenarios'] == False):
         samp_ens[Nid]['nr_bs_scenarios'] = 0
         return samp_ens
@@ -631,9 +635,9 @@ def bs_probability_scenarios_RLHS(**kwargs):
     ### Calculation of the combined grid of parameters and its associated PDF ###    
 
     # Resolution for the magitude, position
-    mag_res = 0.05 #default=0.05
-    pos_res_div = 0.05 # default=0.01 -> resolution scaled in based of the magnitude and area
-    dep_res = 3000 #default=2000 (every 2km)
+    mag_res = 0.1 #default=0.05
+    dep_res = 30 #default=2000 (every 2km)
+    pos_res = 50
 
     ### Magnitude PDF ###
     #####################
@@ -644,91 +648,74 @@ def bs_probability_scenarios_RLHS(**kwargs):
     mag_prob_pdf = scipy.stats.norm.pdf(mag_val_grid,loc=Mw, scale=sig)
     mag_prob_cum = scipy.stats.norm.cdf(mag_val_grid,loc=Mw, scale=sig)
     mag_prob_pdf_norm = mag_prob_pdf/np.sum(mag_prob_pdf)
-    ### Correct  Covariance matrix ###
-    #area=math.pow(10.0, (Mw - 4.185))*(1000)**2
-    #v_hwidth = math.sqrt(area)*0.5 #correct_BS_vertical_position(mag = mag_val)
-    #h_hwidth = math.sqrt(area)*0.5 #correct_BS_horizontal_position(mag = mag_val)
-    v_hwidth = correct_BS_vertical_position(mag = Mw)
-    h_hwidth = correct_BS_horizontal_position(mag = Mw)
-    area = (2.0*v_hwidth/(math.sin(math.pi/4)))*(2.0*h_hwidth)
+    width = mag_to_w_BS(mag=Mw, type_scala='M2W')
+    length = mag_to_l_BS(mag=Mw, type_scala='M2L')
+    area = length*width
 
     PosCovMat_3d    = np.array([[ee_d['cov_matrix']['XX'], ee_d['cov_matrix']['XY'], ee_d['cov_matrix']['XZ']], \
                                   [ee_d['cov_matrix']['XY'], ee_d['cov_matrix']['YY'], ee_d['cov_matrix']['YZ']], \
                                   [ee_d['cov_matrix']['XZ'], ee_d['cov_matrix']['YZ'], ee_d['cov_matrix']['ZZ']]])
     co = PosCovMat_3d*1000000
     cov = copy.deepcopy(co) #np.zeros((3,3))
-    cov[0,0] = co[0,0] + h_hwidth**2
-    cov[1,1] = co[1,1] + h_hwidth**2
-    cov[2,2] = co[2,2] + v_hwidth**2
+    cov[0,0] = co[0,0] + (0.5*length)**2
+    cov[1,1] = co[1,1] + (0.5*length)**2
+    cov[2,2] = co[2,2] + (math.sin(math.pi/4)*0.5*width)**2
     mean=xyz
 
     # Resolution of the position
-    pos_res=int(np.log(Mw)*math.sqrt((cov[0,0]+cov[1,1]))*pos_res_div)
+    #pos_res=int(np.log(Mw)*math.sqrt((cov[0,0]+cov[1,1]))*pos_res_div)
 
     ### Position PDF ###
     ####################
-    xarrmin = xyz[0] - (2.)*math.sqrt(cov[0,0]) #10000 #co[0,0]
-    xarrmax = xyz[0] + (2.)*math.sqrt(cov[0,0]) #10000 #co[0,0]
-    xarr = np.arange(xarrmin,xarrmax,pos_res)
-    yarrmin = xyz[1] - (2.)*math.sqrt(cov[1,1]) #10000 #co[1,1]
-    yarrmax = xyz[1] + (2.)*math.sqrt(cov[1,1]) #10000 #co[1,1]
-    yarr = np.arange(yarrmin,yarrmax,pos_res)
-    zarrmin = 1000 #min(1000, xyz[2] - (3./4.)*co[2,2])
-    zarrmax = xyz[2] + (2.)*math.sqrt(cov[2,2]) #10000 #co[2,2]
-    zarr = np.arange(zarrmin,zarrmax,dep_res)
+    xarrmin = xyz[0] - (4.)*math.sqrt(cov[0,0])
+    xarrmax = xyz[0] + (4.)*math.sqrt(cov[0,0])
+    pos_res_x=(xarrmax-xarrmin)/pos_res
+    #xarr = np.arange(xarrmin,xarrmax,pos_res_x)
+    xarr = np.linspace(xarrmin,xarrmax,pos_res)
+    yarrmin = xyz[1] - (4.)*math.sqrt(cov[1,1])
+    yarrmax = xyz[1] + (4.)*math.sqrt(cov[1,1])
+    pos_res_y=(yarrmax-yarrmin)/pos_res
+    #yarr = np.arange(yarrmin,yarrmax,pos_res_y)
+    yarr = np.linspace(yarrmin,yarrmax,pos_res)
+    dip_min=math.radians(float(10.0))
+    zarrmin = 1000+(width/2.0)*math.sin(dip_min)
+    zarrmax = xyz[2] + (4.)*math.sqrt(cov[2,2]) #10000 #co[2,2]
+    pos_res_z=(zarrmax-zarrmin)/dep_res
+    #zarr = np.arange(zarrmin,zarrmax,dep_res_z)
+    zarr = np.linspace(zarrmin,zarrmax,dep_res)
     X, Y, Z = np.meshgrid(xarr,yarr,zarr)
     xyz_list = np.vstack(np.hstack(np.stack((X,Y,Z),axis=-1)))
     xyz_ind=np.arange(0,len(xyz_list),1)
     xyz_prob_pdf = scipy.stats.multivariate_normal.pdf(xyz_list,mean=mean, cov=cov)
-    #xyz_prob_cum = scipy.stats.multivariate_normal.cdf(xyz_grid,mean=mean, cov=cov)
     xyz_prob_pdf_norm = xyz_prob_pdf/np.sum(xyz_prob_pdf)
-   
+
     ### Angles PDF ###
     ##################
     # Inside the original code the strike/dip/rake
     # do not depend of the magnitude and position
-    bs2_pos = len(pre_selection['BS2_Position_Selection_inn'])
-    lat_val=hx ## event position
-    lon_val=hy ## event position
+    lon_val=hx ## event position
+    lat_val=hy ## event position
 
-    # Searching latlon
+    ## Searching latlon
     latlon = np.zeros((2))
-    utm_zone, hemisphere = wgs84_to_utm(ee['lat'], ee['lon'])
+    utm_zone, hemisphere = wgs84_to_utm(ee['lat'],ee['lon'])
     if hemisphere=='S':
         north=False
     else:
         north=True
-    # Conversion into Lat/Lon degree values
-    if (lat_val>2000000) or (lat_val<0):
-        lat_val = 100001.0
-        lon_val = 100001.0
-        latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                               lon_val,
-                               utm_zone, northern=north)
-    elif (lat_val>100000) and (lat_val<1000000):
-        latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                               lon_val,
-                               utm_zone, northern=north)
-    elif (lat_val>1000000):
-        lat_val=100000.0+(lat_val-999999.0)
-        latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                               lon_val,
-                               utm_zone+1, northern=north)
-    else:
-        lat_val=999999.0-(100000.0-lat_val)
-        latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                               lon_val,
-                               utm_zone-1, northern=north)
+        
+    latlon[1], latlon[0] = convert_utm_to_wgs84(utm_zone, lon_val,
+                               lat_val,northern=north)
 
-    #print(latlon[0],hx,latlon[1],hy)
-    lat_val=latlon[1]
-    lon_val=latlon[0]
-    d_latlon=np.zeros((bs2_pos,2))
+    lat_val=latlon[0]
+    lon_val=latlon[1]
+    bs2_pos = len(pre_selection['BS2_Position_Selection_inn'])
+    d_lonlat=np.zeros((bs2_pos,2))
     d_diff=np.zeros((bs2_pos))
     for val in range(bs2_pos):
             tmp_idx = pre_selection['BS2_Position_Selection_inn'][val]
-            d_latlon[val,:] = Discretizations['BS-2_Position']['Val'][tmp_idx].split()
-            d_diff[val] = haversine(lat_val, lon_val, d_latlon[val,0], d_latlon[val,1])
+            d_lonlat[val,:] = Discretizations['BS-2_Position']['Val'][tmp_idx].split()
+            d_diff[val] = haversine(lon_val, lat_val, d_lonlat[val,0], d_lonlat[val,1])
     ipos_idx = int(np.argmin(d_diff))
     ipos = pre_selection['BS2_Position_Selection_inn'][ipos_idx]
     ireg = Discretizations['BS-2_Position']['Region'][ipos]       
@@ -803,21 +790,21 @@ def bs_probability_scenarios_RLHS(**kwargs):
        ### Choice of the magnitude ###
        ###############################
        mag_val_disc = 0.0
-       mag_val=para_scen_lhs[i,0]
+       mag_val_min=para_scen_lhs[i,0]-(0.5*mag_res)
+       mag_val_max=para_scen_lhs[i,0]+(0.5*mag_res)
+       mag_val=np.random.uniform(low=mag_val_min, high=mag_val_max)
        mag_min_presel=np.ndarray.min(pre_selection['sel_BS_Mag_val'][:])
        if mag_val<mag_min_presel:
            mag_val_disc=mag_min_presel
        else:
            mag_val_disc=mag_val
 
-       ### Compute vertical half_width with respect the magnitude ###
-       v_hwidth = correct_BS_vertical_position(mag = mag_val)
-       h_hwidth = correct_BS_horizontal_position(mag = mag_val)
-       area = (2.0*v_hwidth/(math.sin(math.pi/4)))*(2.0*h_hwidth)
-       #area=math.pow(10.0, (mag_val - 4.185))*(1000)**2
-       #v_hwidth = math.sqrt(area)*0.5 #correct_BS_vertical_position(mag = mag_val)
-       #h_hwidth = math.sqrt(area)*0.5 #correct_BS_horizontal_position(mag = mag_val)
-       length = 2.0*h_hwidth
+       ### Compute length and width with respect the magnitude ###
+       width = mag_to_w_BS(mag=mag_val, type_scala='M2W')
+       length = mag_to_l_BS(mag=mag_val, type_scala='M2L')
+       area = width*length
+
+       ### Moment and slip ###
        rig = 30.0e9
        ### Moment ###
        Mo=10**((mag_val+10.7)*(3.0/2.0))*1e-7
@@ -825,11 +812,17 @@ def bs_probability_scenarios_RLHS(**kwargs):
 
        dip_min=math.radians(float(10.0))
        depmax=500.0*1000.0
-       depmin=1000.0+((area/length/2.0)*math.sin(dip_min))/math.sin(math.pi/4)
-       lat_val=para_scen_lhs[i,1]
-       lon_val=para_scen_lhs[i,2]
-       dep_val=para_scen_lhs[i,3]
-       print("depth values : ",dep_val,depmin)
+       depmin=1000.0+((width/2.0)*math.sin(dip_min))
+       lon_val=para_scen_lhs[i,1]
+       lon_val_min=para_scen_lhs[i,1]-(0.5*pos_res_x)
+       lon_val_max=para_scen_lhs[i,1]+(0.5*pos_res_x)
+       lon_val=np.random.uniform(low=lon_val_min, high=lon_val_max)
+       lat_val_min=para_scen_lhs[i,2]-(0.5*pos_res_y)
+       lat_val_max=para_scen_lhs[i,2]+(0.5*pos_res_y)
+       lat_val=np.random.uniform(low=lat_val_min, high=lat_val_max)
+       dep_val_min=para_scen_lhs[i,3]-(0.5*pos_res_z)
+       dep_val_max=para_scen_lhs[i,3]+(0.5*pos_res_z)
+       dep_val=np.random.uniform(low=dep_val_min, high=dep_val_max)
        if dep_val > depmax:
           dep_val=depmax
        elif dep_val < depmin:
@@ -837,50 +830,32 @@ def bs_probability_scenarios_RLHS(**kwargs):
        
        # Searching latlon
        latlon = np.zeros((2))
-       utm_zone, hemisphere = wgs84_to_utm(ee['lat'], ee['lon'])
+       utm_zone, hemisphere = wgs84_to_utm(ee['lat'],ee['lon'])
        if hemisphere=='S':
            north=False
        else:
            north=True
-       # Conversion into Lat/Lon degree values
-       if (lat_val>2000000) or (lat_val<0):
-           lat_val = 100001.0
-           lon_val = 100001.0
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone, northern=north)
-       elif (lat_val>100000) and (lat_val<1000000):
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone, northern=north)
-       elif (lat_val>1000000):
-           lat_val=100000.0+(lat_val-999999.0)
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone+1, northern=north)
-       else:
-           lat_val=999999.0-(100000.0-lat_val)
-           latlon[0], latlon[1] = utm.to_latlon(lat_val,
-                                  lon_val,
-                                  utm_zone-1, northern=north)
+           
+       latlon[1], latlon[0] = convert_utm_to_wgs84(utm_zone, lon_val,
+                                  lat_val,northern=north)
  
        ### Choice of the angles ###
        ############################
 
        # Inside the original code the strike/dip/rake
        # do not depend of the magnitude and position
-       lat_val=latlon[1]
-       lon_val=latlon[0]
+       lat_val=latlon[0]
+       lon_val=latlon[1]
        bs2_pos = len(pre_selection['BS2_Position_Selection_inn'])
-       d_latlon=np.zeros((bs2_pos,2))
+       d_lonlat=np.zeros((bs2_pos,2))
        d_diff=np.zeros((bs2_pos))
        for val in range(bs2_pos):
                tmp_idx = pre_selection['BS2_Position_Selection_inn'][val]
-               d_latlon[val,:] = Discretizations['BS-2_Position']['Val'][tmp_idx].split()
-               d_diff[val] = haversine(lat_val, lon_val, d_latlon[val,0], d_latlon[val,1])
+               d_lonlat[val,:] = Discretizations['BS-2_Position']['Val'][tmp_idx].split()
+               d_diff[val] = haversine(lon_val, lat_val, d_lonlat[val,0], d_lonlat[val,1])
        ipos_idx = int(np.argmin(d_diff))
-       d_lat_val = d_latlon[ipos_idx,0]
-       d_lon_val = d_latlon[ipos_idx,1]
+       d_lon_val = d_lonlat[ipos_idx,0]
+       d_lat_val = d_lonlat[ipos_idx,1]
        ipos = pre_selection['BS2_Position_Selection_inn'][ipos_idx]
        ireg = Discretizations['BS-2_Position']['Region'][ipos]
        # Faccio il load della regione se non già fatto
@@ -895,10 +870,24 @@ def bs_probability_scenarios_RLHS(**kwargs):
        if(RegMeanProb_BS4.size == 0):
             print(' --> WARNING: region info %d is empty!!!' % (ireg) )
        ipos_reg = np.where(region_info[ireg]['BS4_FocMech_iPosInRegion'] == ipos+1)[1]
-       iangle = int(para_scen_lhs[i,7])
-       proba_angles = RegMeanProb_BS4[ipos_reg[0]][iangle]
+       tmpProbAngles = RegMeanProb_BS4[ipos_reg[0]]
+       # Creation of the array of cumulated probability intervals
+       int_ens = np.zeros(len(tmpProbAngles))
+       prob_cum = 0
+       prob_mod=tmpProbAngles/np.sum(tmpProbAngles)
+       for iii in range(len(tmpProbAngles)):
+           prob_cum=prob_cum+prob_mod[iii]
+           int_ens[iii]= prob_cum
+       # Random selection of a value inside the cumulative distrib.
+       random_value = np.random.random()
+       iangle,proba_a = find_nearest(int_ens,random_value)
        str_val,dip_val,rak_val = Discretizations['BS-4_FocalMechanism']['Val'][iangle].split()
        dip_val_rad=math.radians(float(dip_val))
+
+       #Multigaussiana
+       #str_val=para_scen_lhs[i,4]
+       #dip_val=para_scen_lhs[i,5]
+       #rak_val=para_scen_lhs[i,6]
 
        ### Choice of the angle for the real sampling ###
        #################################################
@@ -922,15 +911,18 @@ def bs_probability_scenarios_RLHS(**kwargs):
        if rak_real_val>180:
            rak_real_val=rak_real_val-360.0
        # Dip angle: uniform law #
-       low_dip=max(10,float(dip_val)-45.0)
-       high_dip=min(90,float(dip_val)+45.0)
+       low_dip=max(10,float(dip_val)-10.0)
+       high_dip=min(90,float(dip_val)+10.0)
 
        dip_real_val=np.random.uniform(low=low_dip, high=high_dip)
        dip_real_val_rad=math.radians(float(dip_real_val))
 
-       max_dip=max(float(dip_val),dip_real_val)
-       max_dip_rad=math.radians(float(max_dip))
-       lim_dep=1000.0+((area/length/2.0)*math.sin(max_dip_rad))/math.sin(math.pi/4)
+       ### Re-evaluation of the depth: the fault plane should not reach the surface ###
+       #width_leo = mag_to_w_leonardo(mag=mag_val,rake=rak_real_val)
+       area_leo = mag_to_a_leonardo(mag=mag_val,rake=rak_real_val)
+       aratio = 7
+       width_leo = 1000.0 * (area_leo / aratio)**0.5
+       lim_dep=1000.0+((width_leo/2.0)*math.sin(dip_real_val_rad))
        if dep_val<lim_dep:
           dep_val=lim_dep
 
@@ -938,13 +930,13 @@ def bs_probability_scenarios_RLHS(**kwargs):
        ### Slip, mag and region ###
        ############################
 
-       mag_list=np.array(Discretizations['BS-1_Magnitude']['Val'][:])
-       imag = np.argmin(np.abs(mag_list-mag_val_disc))
-       # Depth of the event
-       idep = np.argmin(np.abs(Discretizations['BS-3_Depth']['ValVec'][imag][ipos]-(dep_val-((area/length/2.0)*math.sin(dip_val_rad)/math.sin(math.pi/4)))/1000.0))#/math.sin(math.pi/4)))/1000.0))
-       are_val = Discretizations['BS-5_Area']['ValArea'][ireg, imag, iangle]
-       len_val = Discretizations['BS-5_Area']['ValLen'][ireg, imag, iangle]
-       sli_val = Discretizations['BS-6_Slip']['Val'][ireg, imag, iangle]
+       #mag_list=np.array(Discretizations['BS-1_Magnitude']['Val'][:])
+       #imag = np.argmin(np.abs(mag_list-mag_val_disc))
+       ## Depth of the event
+       #idep = np.argmin(np.abs(Discretizations['BS-3_Depth']['ValVec'][imag][ipos]-(dep_val-((area/length/2.0)*math.sin(dip_val_rad)/math.sin(math.pi/4)))/1000.0))#/math.sin(math.pi/4)))/1000.0))
+       #are_val = Discretizations['BS-5_Area']['ValArea'][ireg, imag, iangle]
+       #len_val = Discretizations['BS-5_Area']['ValLen'][ireg, imag, iangle]
+       #sli_val = Discretizations['BS-6_Slip']['Val'][ireg, imag, iangle]
 
        ### Real sampled parameters ###
        ###############################
@@ -952,26 +944,27 @@ def bs_probability_scenarios_RLHS(**kwargs):
        real_val[i,1]=mag_val
        real_val[i,2]=lat_val
        real_val[i,3]=lon_val
-       real_val[i,4]=dep_val/1000.0 #(dep_val-(v_hwidth*math.sin(dip_val_rad)/math.sin(math.pi/4)))/1000.0 #math.sin(math.pi/4)))/1000.0
-       #real_val[i,4]=(dep_val-(v_hwidth*math.sin(dip_val_rad)/math.sin(math.pi/4)))/1000.0 #math.sin(math.pi/4)))/1000.0
+       real_val[i,4]=dep_val/1000.0 
        real_val[i,5]=str_real_val
        real_val[i,6]=dip_real_val
        real_val[i,7]=rak_real_val
        real_val[i,8]=area/(1000.0**2)
        real_val[i,9]=length/1000.0
        real_val[i,10]=slip
-       ##############################
-       #### Identification of the corresponding discretized parameters ###
-       ###################################################################
-       temp_val=np.zeros((10))
-       temp_val[0]=ireg
-       temp_val[1]=Discretizations['BS-1_Magnitude']['Val'][imag] #pre_selection['sel_BS_Mag_val'][imag] #Discretizations['BS-1_Magnitude']['Val'][imag]
-       temp_val[2]= d_lat_val #d_latlon[ipos_idx,0]
-       temp_val[3]= d_lon_val #d_latlon[ipos_idx,1]
-       temp_val[4]=Discretizations['BS-3_Depth']['ValVec'][imag][ipos][idep]
-       temp_val[5]=str_val
-       temp_val[6]=dip_val
-       temp_val[7]=rak_val
+       
+       ###############################
+       ##### Identification of the corresponding discretized parameters ###
+       ####################################################################
+       #temp_val=np.zeros((10))
+       #temp_val[0]=ireg
+       #temp_val[1]=Discretizations['BS-1_Magnitude']['Val'][imag] #pre_selection['sel_BS_Mag_val'][imag] #Discretizations['BS-1_Magnitude']['Val'][imag]
+       #temp_val[2]= d_lat_val #d_latlon[ipos_idx,0]
+       #temp_val[3]= d_lon_val #d_latlon[ipos_idx,1]
+       #temp_val[4]=Discretizations['BS-3_Depth']['ValVec'][imag][ipos][idep]
+       #temp_val[5]=str_val
+       #temp_val[6]=dip_val
+       #temp_val[7]=rak_val
+       
        
        ### Real values ###
        samp_ens[Nid]['real_par_scenarios_bs'][iscenbs,0]=real_val[i,0] #Reg
@@ -1133,4 +1126,3 @@ def haversine(lon1, lat1, lon2, lat2):
     # Radius of earth in kilometers is 6371
     km = 6371* c
     return km
-

@@ -7,10 +7,10 @@ CorrelationModel: JB2009CorrelationModel
 CrosscorrModel: FullCrossCorrelation
 vs30_clustering: True 
 truncation_level: 3
+seed: 0
 
 
 ******* NOTES **********
-
 
 * TectonicRegionType: as defined in OpenQuake tectonic regionalisation.
 * Magnitude_Scaling_Relationship: as required from openquake.hazardlib.scalerel.
@@ -20,7 +20,12 @@ truncation_level: 3
 * CorrelationModel: as required from openquake.hazardlib.correlation.
 * CrosscorrModel: as required from openquake.hazardlib.cross_orrelation.
 * vs30_clustering: `True` value means that Vs30 values are expected to show clustering (as required from openquake.hazardlib.correlation).
-* truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation).
+* truncation_level: number of standard deviations for truncation of the cross-correlation model distribution (as required from openquake.hazardlib.cross_correlation). Note that the truncation feature is lost if you use correlation (see OpenQuake documentation). This parameter is only accounted for when 'NoCrossCorrelation' is selected by the user. 
+* seed: Random seed to ensure reproducibility in sampling from the GMMs
+
+
+
+
 
 
 

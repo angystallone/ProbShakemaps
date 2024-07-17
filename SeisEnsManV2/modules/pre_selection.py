@@ -41,7 +41,6 @@ def pre_selection_of_scenarios(**kwargs):
                                                 PS_mag           = LongTermInfo['Discretizations']['PS-1_Magnitude'], \
                                                 BS_mag           = LongTermInfo['Discretizations']['BS-1_Magnitude'])
 
-
     if(pre_selection['BS_scenarios'] == False and pre_selection['PS_scenarios'] == False):
         #pre_selection['BS2_Position_Selection_out'] = False
         #pre_selection['apply_decision_matrix']      = True
@@ -87,12 +86,12 @@ def check_mag_for_pre_selection(**kwargs):
     BS_mag        = kwargs.get('BS_mag', 'None')
     pre_selection = kwargs.get('pre_selection', 'None')
 
-    if(ee['mag_percentiles']['p84'] < BS_mag['Val'][0] or ee['mag_percentiles']['p16'] > BS_mag['Val'][-1]):
+    if(ee['mag_percentiles']['p84'] < 0 or ee['mag_percentiles']['p16'] > 10):
         pre_selection['BS_scenarios'] = False
         print(" --> Magnitude event outside Magnitide BS scenarios -->", pre_selection['BS_scenarios'])
     else:
         pre_selection['BS_scenarios'] = True
-    if(ee['mag_percentiles']['p84'] < PS_mag['Val'][0] or ee['mag_percentiles']['p16'] > PS_mag['Val'][-1]):
+    if(ee['mag_percentiles']['p84'] < 0 or ee['mag_percentiles']['p16'] > 10):
         pre_selection['PS_scenarios'] = False
         print(" --> Magnitude event outside Magnitide PS scenarios -->", pre_selection['BS_scenarios'])
 
@@ -294,28 +293,17 @@ def pre_selection_magnitudes(**kwargs):
     # BS
 
     if(max_mag <= val_BS[0]):
-        sel_BS_Mag_val = np.array([])
-        sel_BS_Mag_idx = (sel_BS_Mag_val,)
-        sel_BS_Mag_IDs = []
-
+        max_mag = val_BS[0]
     elif(min_mag >= val_BS[-1]):
-        # sel_BS_Mag_val = np.array([val_BS[-1]])
-        sel_BS_Mag_val = np.array([])
-        sel_BS_Mag_idx = (sel_BS_Mag_val,)
-        sel_BS_Mag_IDs = []
-        # non devo prendere nulla
-        #sel_BS_Mag_IDs = [sel_BS_Mag_idx[-1]]
-
-
-
+        min_mag = val_BS[-1] 
+    
+    sel_BS_Mag_val = val_BS[(val_BS >= min_mag) & (val_BS <= max_mag)]
+    sel_BS_Mag_idx = np.where((val_BS >= min_mag) & (val_BS <= max_mag))
+    if(len(sel_BS_Mag_idx[0]) == 0):
+        idx = np.array((np.abs(val_BS-max_mag)).argmin())
+        sel_BS_Mag_IDs = list(itemgetter(idx)(ID_BS))
     else:
-        sel_BS_Mag_val = val_BS[(val_BS >= min_mag) & (val_BS <= max_mag)]
-        sel_BS_Mag_idx = np.where((val_BS >= min_mag) & (val_BS <= max_mag))
-        if(len(sel_BS_Mag_idx[0]) == 0):
-            idx = np.array((np.abs(val_BS-max_mag)).argmin())
-            sel_BS_Mag_IDs = list(itemgetter(idx)(ID_BS))
-        else:
-            sel_BS_Mag_IDs = list(itemgetter(*sel_BS_Mag_idx[0])(ID_BS))
+        sel_BS_Mag_IDs = list(itemgetter(*sel_BS_Mag_idx[0])(ID_BS))
 
     #print(sel_BS_Mag_val, sel_BS_Mag_idx)
 

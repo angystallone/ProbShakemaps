@@ -29,6 +29,7 @@ def compute_position_sigma_lat_lon(**kwargs):
 
     nSigma              = float(Config.get('Settings', 'nSigma'))
     bs_mag_max          = float(Config.get('Settings', 'Mag_BS_Max'))
+    bs_mag_min          = 6.0 #float(Config.get('Settings', 'Mag_BS_Min'))
 
     event_mag           = event_parameters['mag_percentiles']['p50']
     event_mag_max       = event_parameters['mag_percentiles']['p50'] + \
@@ -39,12 +40,12 @@ def compute_position_sigma_lat_lon(**kwargs):
     event_cov_xy        = event_parameters['pos_Sigma']['XY']
     event_cov_yy        = event_parameters['pos_Sigma']['YY']
 
-
-    mag_to_correct      = min(bs_mag_max, event_mag_max)
+    event_to_min        = max(event_mag_max, bs_mag_min)
+    mag_to_correct      = min(bs_mag_max, event_to_min)
 
     delta_position_BS_h = correct_BS_horizontal_position(mag=mag_to_correct, cfg=Config)
     delta_position_PS_h = correct_PS_horizontal_position(mag=event_mag + nSigma * event_mag_sigma)
-
+    
     position_BS_sigma_yy  = math.sqrt(abs(event_cov_yy)) + delta_position_BS_h
     position_BS_sigma_xx  = math.sqrt(abs(event_cov_xx)) + delta_position_BS_h
     position_BS_sigma_xy  = math.sqrt(abs(event_cov_xy)) + delta_position_BS_h

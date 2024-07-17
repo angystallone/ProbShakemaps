@@ -1,24 +1,35 @@
 import tools
 import os
-import numpy
+import numpy as np
 import argparse
 import time
 import shutil
 import logging
 from datetime import datetime
+import config
 
 start_time = time.time()
 
 def setup_logging(log_dir):
+            
+    """
+    Sets up the LOG file
+    """
+       
     current_time = datetime.now().strftime("%Y%m%d%H%M%S")
     log_file = os.path.join(log_dir, f"setup_{current_time}.log")
     logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def run_main():
-    
-    # set the random seed for reproducibility
-    seed = 0
-    numpy.random.seed(seed)
+
+    """
+    Runs tools.Main()
+    """
+
+    # Set the random seed for reproducibility (must be the same as in tools.py)
+    config_dict = config.load_config('input_file.txt')
+    seed = config_dict['seed']
+    np.random.seed(seed)
 
     ProbCalc = tools.Main(args.imt, args.pois_file,
                         args.numGMPEsRealizations, args.num_processes)
@@ -45,12 +56,14 @@ input_params.add_argument('--pois_subset', action='store_true', default=False, h
 input_params.add_argument('--n_pois', type=int, default=10, help='Number of POIs in the subset')
 input_params.add_argument('--max_distance', type=int, default=200, help='Max distance from epicenter of POIs in the subset')
 input_params.add_argument('--pois_selection_method', choices=['random', 'azimuth_uniform'], help='Selection method for the POIs of the subset')
+input_params.add_argument('--reuse_pois_subset', action='store_true', default=False, help='Reuse the subset of POIs already extracted in POIs.txt')
+input_params.add_argument('--vector_npy', action='store_true', default=False, help='Store ground motion distributions at all POIs (vector.npy)')
 input_params.add_argument('--fileScenariosWeights', default="", help='File with scenarios weights')
 
 # Parse command-line arguments
 args = parser.parse_args()
 
-# Set up logging
+# Set up log file
 outfile_dir = os.path.join(os.getcwd(), "OUTPUT/LOGS/")
 if not os.path.exists(outfile_dir):
             os.makedirs(outfile_dir)
@@ -63,9 +76,13 @@ Lon_Event = float(params["Lon_Event"])
 event_dir = params["event_dir"]
 EnsembleSize = params['Ensemble_Size']
 
-#################################
-##### CHECK STATION RECORDS #####
-#################################
+# Scenarios file
+listscenarios_dir = os.getcwd() + "/INPUT_FILES/ENSEMBLE/"
+scenarios_file = [name for name in os.listdir(listscenarios_dir) if name != ".DS_Store"]
+
+###########################
+##### STATION RECORDS #####
+###########################
 
 if args.tool == 'StationRecords':
 
@@ -103,6 +120,7 @@ elif args.tool == 'Save_Output':
         
     logging.info(f"Tool: {args.tool}") 
     logging.info(f"Intensity Measure: {args.imt}")
+    logging.info(f"Scenarios Ensemble File: {scenarios_file[0]}")
     logging.info(f"POIs File: {args.pois_file}") 
     logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")   
     
@@ -156,6 +174,9 @@ if args.prob_tool:
 
     run_main_flag = True  # Flag variable to track if Main() has been executed
     pois_subset_flag = True  # Flag variable to track if the pois subset has already been extracted
+
+    if args.reuse_pois_subset:
+        pois_subset_flag = False # Reuse the subset of POIs already extracted (in POIs.txt)
     
     for tool in args.prob_tool:
             
@@ -174,7 +195,8 @@ if args.prob_tool:
             logging.info(f"Prob Tool: {tool}")  
             logging.info(f"Intensity Measure: {args.imt}")
             logging.info(f"Min {args.imt}: {args.imt_min}")
-            logging.info(f"Max {args.imt}: {args.imt_max}")  
+            logging.info(f"Max {args.imt}: {args.imt_max}") 
+            logging.info(f"Scenarios Ensemble File: {scenarios_file[0]}") 
             logging.info(f"POIs File: {args.pois_file}")
             logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")  
             logging.info(f"File Scenarios Weights: {args.fileScenariosWeights}")  
@@ -202,7 +224,7 @@ if args.prob_tool:
             GetStatistics = tools.GetStatistics(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, args.imt, 
                                                 args.imt_min, args.imt_max, args.fileScenariosWeights, 
                                                 args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                args.pois_selection_method, args.deg_round, pois_subset_flag)
+                                                args.pois_selection_method, args.deg_round, pois_subset_flag, args.num_processes, args.vector_npy)
             GetStatistics.save_statistics()
             GetStatistics.plot_statistics()
 
@@ -226,7 +248,8 @@ if args.prob_tool:
             logging.info(f"Prob Tool: {tool}")  
             logging.info(f"Intensity Measure: {args.imt}")
             logging.info(f"Min {args.imt}: {args.imt_min}")
-            logging.info(f"Max {args.imt}: {args.imt_max}")  
+            logging.info(f"Max {args.imt}: {args.imt_max}") 
+            logging.info(f"Scenarios Ensemble File: {scenarios_file[0]}") 
             logging.info(f"POIs File: {args.pois_file}")
             logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")  
             logging.info(f"Station file: {args.station_file}")
@@ -255,7 +278,7 @@ if args.prob_tool:
             GetDistributions = tools.GetDistributions(SiteGmf, EnsembleSize, Lon_Event, Lat_Event, args.numGMPEsRealizations, event_dir, 
                                                         args.imt, args.station_file, args.imt_min, args.imt_max, args.fileScenariosWeights, 
                                                         args.pois_file, args.pois_subset, args.n_pois, args.max_distance, 
-                                                        args.pois_selection_method, args.deg_round, pois_subset_flag)
+                                                        args.pois_selection_method, args.deg_round, args.num_processes, pois_subset_flag)
             GetDistributions.plot_distributions() 
             pois_subset_flag = False
 
@@ -270,6 +293,7 @@ if args.prob_tool:
                 
             logging.info(f"Prob Tool: {tool}")  
             logging.info(f"Intensity Measure: {args.imt}")
+            logging.info(f"Scenarios Ensemble File: {scenarios_file[0]}")
             logging.info(f"POIs File: {args.pois_file}")
             logging.info(f"Num GMPEsRealizations: {args.numGMPEsRealizations}")  
             logging.info(f"File Scenarios Weights: {args.fileScenariosWeights}")  
@@ -294,7 +318,7 @@ if args.prob_tool:
                 run_main_flag = False    
 
             EnsemblePlot = tools.EnsemblePlot(SiteGmf, args.imt, Lon_Event, Lat_Event, EnsembleSize, args.numGMPEsRealizations, args.fileScenariosWeights, args.pois_file,
-                                                 args.pois_subset, args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method, pois_subset_flag)
+                                                 args.pois_subset, args.n_pois, args.max_distance, args.deg_round, args.pois_selection_method, args.num_processes, pois_subset_flag)
             EnsemblePlot.plot()
             pois_subset_flag = False
 

@@ -67,7 +67,7 @@ def parse_ptf_stdin():
     parser.add_argument('--rabbit_family',     default = 'neam',      help = 'Publishing Routing Key Family: neam, dpc, dpc_test, comtest. Default: neam')
     parser.add_argument('--pub_email',         default = False,        help = 'Send alert messages via email. [True]/False',type=lambda x: bool(util.strtobool(x)), choices=[True, False])
     parser.add_argument('--pub_rabbit',        default = False,       help = 'Send alert messages on rabbit. [False]/True',type=lambda x: bool(util.strtobool(x)), choices=[True, False])
-
+    parser.add_argument('--angles', nargs='+', type=int, help="List of angles")
 
     # load arguments
     args = parser.parse_args()

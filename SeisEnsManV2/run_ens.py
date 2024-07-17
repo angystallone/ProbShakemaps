@@ -33,6 +33,8 @@ from pre_selection         import pre_selection_of_scenarios
 from short_term                 import short_term_probability_distribution
 from probability_scenarios      import compute_probability_scenarios
 from ensemble_sampling_RS       import compute_ensemble_sampling_RS
+from create_histo_map import create_histo_map     
+from create_histo_map import move_output
 
 ##### BEGIN #####
 ### Configuration files preparation ###
@@ -79,6 +81,7 @@ lambda_bsps = load_lambda_BSPS(cfg                   = Config,
                                args                  = args,
                                event_parameters      = event_parameters,
                                LongTermInfo          = LongTermInfo)
+                               
 lambda_bsps = separation_lambda_BSPS(cfg              = Config,
                                      args             = args,
                                      event_parameters = event_parameters,
@@ -95,31 +98,6 @@ pre_selection = pre_selection_of_scenarios(cfg                = Config,
                                            LongTermInfo       = LongTermInfo,
                                            PSBarInfo          = PSBarInfo,
                                            ellipses           = ellipses)
-
-
-##########################################################
-# # COMPUTE PROB DISTR
-# print('Compute short term probability distribution')
-# short_term_probability  = short_term_probability_distribution(cfg                = Config,
-#                                                               args               = args,
-#                                                               event_parameters   = event_parameters,
-#                                                               LongTermInfo       = LongTermInfo,
-#                                                               PSBarInfo          = PSBarInfo,
-#                                                               lambda_bsps        = lambda_bsps,
-#                                                               pre_selection      = pre_selection)
-
-
-##COMPUTE PROBABILITIES SCENARIOS: line 840
-# print('Compute Probabilities scenarios')
-# probability_scenarios = compute_probability_scenarios(cfg                = Config,
-#                                                       args               = args,
-#                                                       event_parameters   = event_parameters,
-#                                                       LongTermInfo       = LongTermInfo,
-#                                                       PSBarInfo          = PSBarInfo,
-#                                                       lambda_bsps        = lambda_bsps,
-#                                                       pre_selection      = pre_selection,
-#                                                       regions            = Region_files,
-#                                                       Scenarios_PS       = Scenarios_PS)
 
 
 ############### Real sampling ########################
@@ -141,14 +119,14 @@ print('############# Writing list of scenarios #############')
 
 for Nid in range(RS_samp_run):
     RS_samp_scen=len(sampled_ensemble_RS[Nid]['real_par_scenarios_bs'][:,0])
-    par=np.zeros((11))
+    par=np.zeros((RS_samp_scen,11))
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
     filename = f'./output/list_nb{Nid}_of_{RS_samp_scen}_scenbs_{timestamp}.txt'
     myfile = open(filename, 'w')
     for Nscen in range(RS_samp_scen):
-        par[:]=sampled_ensemble_RS[Nid]['real_par_scenarios_bs'][Nscen,:]
-        myfile.write("%f %f %f %f %f %f %f %f %f %f\n"%(par[1],par[2],par[3],par[4],par[5],par[6],par[7],par[8],par[9],par[10]))
+        par[Nscen,:]=sampled_ensemble_RS[Nid]['real_par_scenarios_bs'][Nscen,:]
+        myfile.write("%f %f %f %f %f %f %f\n"%(par[Nscen,1],par[Nscen,3],par[Nscen,2],par[Nscen,4],par[Nscen,5],par[Nscen,6],par[Nscen,7]))
     myfile.close()
 
 print('############# Copying list of scenarios to Prob Shakemap #############')
@@ -178,5 +156,13 @@ for file in scenarios_files:
 source_path = os.path.join(start_folder, last_file)
 destination_path = os.path.join(destination_folder, last_file)
 shutil.copy(source_path, destination_path)
+
+create_histo_map(cfg                = Config,
+                 args               = args,
+                 event_parameters   = event_parameters,
+                 scenarios_parameters = par,
+                 para_file = myfile)
+
+move_output()
 
 print('############# DONE! #############')
