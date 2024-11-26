@@ -1,3 +1,7 @@
+# 🚨 WARNING 🚨
+
+Recent ShakeMap software updates are causing issues with Docker builds. We're actively working on a fix and will provide updates soon. Thanks for your patience!
+
 # ProbShakemap
 
 `ProbShakemap` is a Python toolbox that propagates source uncertainty from an ensemble of earthquake scenarios to ground motion predictions at a grid of target points. It accounts for model uncertainty by accommodating multiple GMMs and their inherent variability. The package includes `SeisEnsMan`, a tool for generating the ensemble of event-compatible source scenarios. The output consists of a set of products aiding the user to explore and visualize the predictive distribution of ground motion at each target point. Designed for Urgent Computing applications.
